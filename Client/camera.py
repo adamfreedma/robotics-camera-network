@@ -39,6 +39,7 @@ class Camera(object):
             if ret == 0:
                 print("Error when capturing frame")
             else:
+                print("sccsess")
                 self.frames_queue.put(frame)
             # popping frames if the queue is too big
             while self.frames_queue.qsize() > self.MAX_QUEUE_SIZE:
@@ -52,3 +53,5 @@ if __name__ == '__main__':
     while True:
         if frames_queue.qsize():
             cv2.imshow("frame", frames_queue.get())
+
+        cv2.waitKey(1)
