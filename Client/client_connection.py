@@ -1,5 +1,6 @@
 import socket
 import threading
+import threading
 from typing import Union, List
 
 
@@ -23,7 +24,7 @@ class Connection(object):
         self.server_socket.connect((self.server_ip, self.server_port))
         # checking if the server approves us
         self.accepted = False
-        self.wait_for_ack_thread = threading.Thread(target=self._wait_for_ack)
+        self.wait_for_ack_thread = threading.Thread(target=self._wait_for_ack, daemon=True)
         self.wait_for_ack_thread.start()
 
     def _wait_for_ack(self):
@@ -39,9 +40,28 @@ class Connection(object):
 
         if answer == "ack":
             self.accepted = True
+            print("accepted by the server")
         else:
             print("rejected by the server")
             self.accepted = False
+
+    def _str_protocol(self, data: Union[any, List[any]]) -> str:
+        """
+        :param data: data to send
+        :return: the data according to the protocol
+        """
+        msg = ""
+        # making the str a list
+        if type(data) == str:
+            data = tuple(data)
+        # making a fixed length to each part of the message
+        part_length = self.MSG_LENGTH // len(data)
+
+        for part in data:
+            msg += str(part).zfill(part_length)
+
+        msg.zfill(self.MSG_LENGTH)
+        return msg
 
     def send(self, data: Union[str, List[str]]):
         """
@@ -50,14 +70,9 @@ class Connection(object):
         """
         # only sending if we are accepted
         if self.accepted:
-            msg = ""
-            # making the str a list
-            if type(data) == str:
-                data = tuple(data)
-            # making a fixed length to each part of the message
-            part_length = self.MSG_LENGTH // len(data)
+            msg = self._str_protocol(data)
 
-            for part in data:
-                msg += part.zfill(part_length)
-
-            msg.zfill(self.MSG_LENGTH)
+            try:
+                self.server_socket.send(msg.encode())
+            except socket.error:
+                print("Connection interrupted, send")

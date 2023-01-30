@@ -15,7 +15,7 @@ class Camera(object):
         self._initialize_camera()
 
         # starting the grabbing thread
-        self.grab_thread = threading.Thread(target=self.grab_frames)
+        self.grab_thread = threading.Thread(target=self.grab_frames, daemon=True)
         self.grab_thread.start()
 
     def _initialize_camera(self):
