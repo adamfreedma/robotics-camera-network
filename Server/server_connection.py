@@ -2,9 +2,12 @@ import socket
 import select
 import threading
 from typing import Tuple, List
+import encryption
 
 
 class Connection(object):
+
+    MAX_QUEUE_SIZE = 1
 
     def __init__(self, server_port, client_count=3):
         self.server_port = server_port
@@ -19,6 +22,8 @@ class Connection(object):
         self.incoming_messages = []
 
         # starting the run thread
+        self.lock = threading.Lock()
+
         self.run_thread = threading.Thread(target=self._run)
         self.run_thread.start()
 
@@ -76,11 +81,12 @@ class Connection(object):
                     #TODO - change to mac adress check
                     print("acked")
                     new_client.send("ack".encode())
+                    self.encryptor = encryption.Encryption(new_client)
                 else:
                     input_data = ""
                     try:
                         # getting input data
-                        input_data = curr_socket.recv(1024).decode()
+                        input_data = curr_socket.recv(20).decode()
                     except Exception as e:
                         print(str(e))
                         self._handle_disconnected_client(curr_socket)
@@ -88,6 +94,10 @@ class Connection(object):
                     if input_data == "":
                         self._handle_disconnected_client(curr_socket)
                     else:
+                        self.lock.acquire()
                         self.incoming_messages.append((curr_socket, input_data))
+                        while len(self.incoming_messages) > self.MAX_QUEUE_SIZE:
+                            self.incoming_messages.pop()
+                        self.lock.release()
 
             self._send_waiting_messages(w_list, self.messages_to_send)

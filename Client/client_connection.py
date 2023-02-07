@@ -2,7 +2,7 @@ import socket
 import threading
 import threading
 from typing import Union, List
-
+import encryption
 
 class Connection(object):
 
@@ -41,6 +41,7 @@ class Connection(object):
         if answer == "ack":
             self.accepted = True
             print("accepted by the server")
+            self.encryption = encryption.Encryption(self.server_socket)
         else:
             print("rejected by the server")
             self.accepted = False
