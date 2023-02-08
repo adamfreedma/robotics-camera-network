@@ -24,7 +24,7 @@ class Connection(object):
         # starting the run thread
         self.lock = threading.Lock()
 
-        self.run_thread = threading.Thread(target=self._run)
+        self.run_thread = threading.Thread(target=self._run, daemon=True)
         self.run_thread.start()
 
     def _disconnect_all_clients(self):
@@ -70,23 +70,23 @@ class Connection(object):
         """main loop
         """
         while True:
-            r_list, w_list, x_list = select.select([self.server_socket] + list(self.open_client_sockets.keys()), [self.server_socket] + list(self.open_client_sockets.keys()), [])
-
+            r_list, w_list, x_list = select.select([self.server_socket] + list(self.open_client_sockets.keys()),
+                                                   [self.server_socket] + list(self.open_client_sockets.keys()), [])
             for curr_socket in r_list:
                 # checking for new connections
                 if curr_socket is self.server_socket:
                     (new_client, address) = self.server_socket.accept()
                     print(f'{address[0]}, connected to the server')
                     self.open_client_sockets[new_client] = address[0]
-                    #TODO - change to mac adress check
-                    print("acked")
-                    new_client.send("ack".encode())
+                    # TODO - change to mac address check
                     self.encryptor = encryption.Encryption(new_client)
+
                 else:
                     input_data = ""
                     try:
                         # getting input data
-                        input_data = curr_socket.recv(20).decode()
+                        encrypted_input_data = curr_socket.recv(64)
+                        input_data = self.encryptor.decrypt(encrypted_input_data)
                     except Exception as e:
                         print(str(e))
                         self._handle_disconnected_client(curr_socket)

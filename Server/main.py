@@ -6,6 +6,7 @@ import merger
 def main():
     connection = server_connection.Connection(3333)
     object_merger = merger.Merger()
+    start = time.time()
     while True:
 
         connection.lock.acquire()

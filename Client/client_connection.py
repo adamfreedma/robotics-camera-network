@@ -1,8 +1,8 @@
 import socket
 import threading
-import threading
 from typing import Union, List
 import encryption
+import time
 
 class Connection(object):
 
@@ -23,6 +23,8 @@ class Connection(object):
         self.server_socket = socket.socket()
         self.server_socket.connect((self.server_ip, self.server_port))
         # checking if the server approves us
+        self.encryptor = encryption.Encryption(self.server_socket)
+        self.finished_exchange = False
         self.accepted = False
         self.wait_for_ack_thread = threading.Thread(target=self._wait_for_ack, daemon=True)
         self.wait_for_ack_thread.start()
@@ -32,6 +34,8 @@ class Connection(object):
         waiting for the servers response
         :return: putting response into self.accepted
         """
+        while not self.encryptor.finished_exchange:
+            time.sleep(0.1)
         answer = ""
         try:
             answer = self.server_socket.recv(3).decode()
@@ -41,7 +45,6 @@ class Connection(object):
         if answer == "ack":
             self.accepted = True
             print("accepted by the server")
-            self.encryption = encryption.Encryption(self.server_socket)
         else:
             print("rejected by the server")
             self.accepted = False
@@ -72,8 +75,10 @@ class Connection(object):
         # only sending if we are accepted
         if self.accepted:
             msg = self._str_protocol(data)
+            encrypted_msg = self.encryptor.encrypt(msg)
+            print(encrypted_msg)
 
             try:
-                self.server_socket.send(msg.encode())
-            except socket.error:
-                print("Connection interrupted, send")
+                self.server_socket.send(encrypted_msg)
+            except socket.error as e:
+                print("Connection interrupted, send", e)
