@@ -56,8 +56,8 @@ class Connection(object):
         """
         msg = ""
         # making the str a list
-        if type(data) == str:
-            data = tuple(data)
+        if type(data) != tuple:
+            data = [data]
         # making a fixed length to each part of the message
         part_length = self.MSG_LENGTH // len(data)
 
@@ -76,9 +76,8 @@ class Connection(object):
         if self.accepted:
             msg = self._str_protocol(data)
             encrypted_msg = self.encryptor.encrypt(msg)
-            print(encrypted_msg)
 
             try:
                 self.server_socket.send(encrypted_msg)
             except socket.error as e:
-                print("Connection interrupted, send", e)
+                exit("Connection interrupted, send" + e.strerror)

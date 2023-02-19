@@ -15,6 +15,7 @@ class Connection(object):
         self.server_socket = socket.socket()
         self.server_socket.bind(('0.0.0.0', self.server_port))
         self.server_socket.listen(client_count)
+        self.encryptors = {}
 
         # clients
         self.open_client_sockets = {}
@@ -63,6 +64,7 @@ class Connection(object):
                     messages.remove(message)
                 except socket.error:
                     self._handle_disconnected_client(client_socket)
+                    print("from send waiting")
                     messages_to_send_cleared = [msg for msg in messages if msg[0] is client_socket]
                     messages = messages_to_send_cleared
 
@@ -79,25 +81,28 @@ class Connection(object):
                     print(f'{address[0]}, connected to the server')
                     self.open_client_sockets[new_client] = address[0]
                     # TODO - change to mac address check
-                    self.encryptor = encryption.Encryption(new_client)
+                    self.encryptors[new_client] = encryption.Encryption(new_client)
 
                 else:
                     input_data = ""
                     try:
                         # getting input data
                         encrypted_input_data = curr_socket.recv(64)
-                        input_data = self.encryptor.decrypt(encrypted_input_data)
-                    except Exception as e:
+                        input_data = self.encryptors[curr_socket].decrypt(encrypted_input_data)
+                    except socket.error as e:
                         print(str(e))
                         self._handle_disconnected_client(curr_socket)
+                        print("from receive message")
 
                     if input_data == "":
                         self._handle_disconnected_client(curr_socket)
+                        print("from empty message")
                     else:
                         self.lock.acquire()
                         self.incoming_messages.append((curr_socket, input_data))
                         while len(self.incoming_messages) > self.MAX_QUEUE_SIZE:
                             self.incoming_messages.pop()
                         self.lock.release()
+
 
             self._send_waiting_messages(w_list, self.messages_to_send)
