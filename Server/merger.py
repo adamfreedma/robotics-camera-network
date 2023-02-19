@@ -5,6 +5,9 @@ from typing import List
 
 
 class Merger(object):
+    """
+    merges the object locations sent from all clients
+    """
 
     MAX_DISTANCE_TO_MERGE = 0.15
     TIME_TO_DELETE = 1
@@ -20,14 +23,22 @@ class Merger(object):
         self.run_thread.start()
 
     def insert_client_object(self, x: float, y: float):
+        """
+        inserts the new object received into the potential new object list
+        :param x: object x position
+        :param y: object y position
+        :return: adds the object into the list
+        """
         self.lock.acquire()
         self.client_object_list.append([x, y, time.time()])
-
         self.lock.release()
 
     def _run(self):
+        """
+        merger's main loop, merges all objects received from clients into one compressed list
+        :return: merges the list
+        """
         while True:
-            # self._delete_old()
             merge_list: List[List[float, float, float]] = []
 
             self.lock.acquire()
@@ -67,5 +78,11 @@ class Merger(object):
             self.client_object_list = []
 
 
-def _distance(list1, list2):
-    return math.sqrt((list2[0] - list1[0]) ** 2 + (list2[1] - list1[1]) ** 2)
+def _distance(point1: List[float, float], point2: List[float, float]) -> float:
+    """
+    calculates the euclidean distance between 2 points
+    :param point1: point1
+    :param point2: point 2
+    :return:the distance between the points
+    """
+    return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)

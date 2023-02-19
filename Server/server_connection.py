@@ -68,8 +68,9 @@ class Connection(object):
                     messages_to_send_cleared = [msg for msg in messages if msg[0] is client_socket]
                     messages = messages_to_send_cleared
 
-    def _run(self) -> None:
-        """main loop
+    def _run(self):
+        """
+        main loop
         """
         while True:
             r_list, w_list, x_list = select.select([self.server_socket] + list(self.open_client_sockets.keys()),
@@ -103,6 +104,5 @@ class Connection(object):
                         while len(self.incoming_messages) > self.MAX_QUEUE_SIZE:
                             self.incoming_messages.pop()
                         self.lock.release()
-
 
             self._send_waiting_messages(w_list, self.messages_to_send)

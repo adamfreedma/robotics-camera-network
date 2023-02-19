@@ -23,9 +23,12 @@ class Encryption(object):
 
     def _exchange(self, connection: socket.socket):
         """
-        :param connection: client to exchange with
-        :return: exchanges secret ket with the client using the Diffie Hellman method/
+        Diffie Hellman key exhange with the client
+        :param connection: socket of the client to exchange with
+        :return: exchanges secret ket with the client using the Diffie Hellman method
         """
+
+        # generating P and G value for the exchange, where P is a large prime and G is the base
         p = self._choose_p()
         g = -2 % p
 
@@ -50,22 +53,33 @@ class Encryption(object):
         secret_key_number = self._mod_power(received_key, self.private_key, p)
         self.secret_key = hashlib.sha256(str(secret_key_number).encode()).digest()
 
+        # sending accept message to the client since we finished the exchange
         connection.send("ack".encode())
 
-    def encrypt(self, string):
+    def encrypt(self, string: str) -> bytes:
+        """
+        encrypts a string
+        :param string: string to encrypt
+        :return: the encrypted string
+        """
         string = self._pad(string)
         starting_vector = Random.new().read(self.BLOCK_SIZE)
         cipher = AES.new(self.secret_key, AES.MODE_CBC, starting_vector)
         return base64.b64encode(starting_vector + cipher.encrypt(string.encode()))
 
-    def decrypt(self, encrypted_string):
+    def decrypt(self, encrypted_string: bytes) -> str:
+        """
+        decrypts an encrypted string
+        :param encrypted_string: the encrypted string
+        :return: the decrypted stirng
+        """
         encrypted_string = base64.b64decode(encrypted_string)
         starting_vector = encrypted_string[:self.BLOCK_SIZE]
         print(starting_vector)
         cipher = AES.new(self.secret_key, AES.MODE_CBC, starting_vector)
         return self._unpad(cipher.decrypt(encrypted_string[self.BLOCK_SIZE:])).decode()
 
-    def _pad(self, string):
+    def _pad(self, string: str) -> str:
         """
         pads the string if it isn't a multiple of block size for encryption
         :param self:
@@ -76,11 +90,20 @@ class Encryption(object):
                                                                                 % self.BLOCK_SIZE)
 
     @staticmethod
-    def _unpad(string):
+    def _unpad(string: str) -> str:
+        """
+        unpads the string after encryption+decryption
+        :param string: the string to unpad
+        :return: the unpadded string
+        """
         return string[:-ord(string[len(string) - 1:])]
 
     @staticmethod
-    def _choose_p():
+    def _choose_p() -> int:
+        """
+        chooses a random large prime number
+        :return: a large prime number
+        """
         while True:
             p = Encryption._find_pseudoprime(128)  # Find a pseudoprime
             # If (p-1)/2 is also prime, then we've completed
@@ -90,7 +113,12 @@ class Encryption(object):
                 return p
 
     @staticmethod
-    def _find_pseudoprime(bit_count):
+    def _find_pseudoprime(bit_count: int) -> int:
+        """
+        generates random numbers until it finds a pseudoprime
+        :param bit_count: number of bits in numbers to search
+        :return: the found pseudoprime
+        """
         n = bit_count // 2
         while True:
             q = randbits(n)
@@ -98,7 +126,14 @@ class Encryption(object):
                 return q * (2 * q - 1)
 
     @staticmethod
-    def _mod_power(base, power, modulo):
+    def _mod_power(base: int, power: int, modulo: int) -> int:
+        """
+        calculates modulo power in O(log(n)) time complexity where n=power
+        :param base: the base of the power
+        :param power: the exponent of the poewr
+        :param modulo: the modulo to use
+        :return: the result of the exponent
+        """
         if power == 0:
             return 1
         n = Encryption._mod_power(base, power // 2, modulo) % modulo
