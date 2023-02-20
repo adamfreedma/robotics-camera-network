@@ -1,7 +1,7 @@
 import time
 import math
 import threading
-from typing import List
+from typing import List, Union
 
 
 class Merger(object):
@@ -9,7 +9,7 @@ class Merger(object):
     merges the object locations sent from all clients
     """
 
-    MAX_DISTANCE_TO_MERGE = 0.15
+    MAX_DISTANCE_TO_MERGE = 15
     TIME_TO_DELETE = 1
     MAX_OBJECT_LIST_SIZE = 10
 
@@ -78,7 +78,7 @@ class Merger(object):
             self.client_object_list = []
 
 
-def _distance(point1: List[float, float], point2: List[float, float]) -> float:
+def _distance(point1: List[Union[float, float]], point2: List[Union[float, float]]) -> float:
     """
     calculates the euclidean distance between 2 points
     :param point1: point1

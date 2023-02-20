@@ -90,7 +90,7 @@ class Connection(object):
                         # getting input data
                         encrypted_input_data = curr_socket.recv(64)
                         input_data = self.encryptors[curr_socket].decrypt(encrypted_input_data)
-                    except socket.error as e:
+                    except Exception as e:
                         print(str(e))
                         self._handle_disconnected_client(curr_socket)
                         print("from receive message")

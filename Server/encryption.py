@@ -47,8 +47,8 @@ class Encryption(object):
 
         try:
             received_key = int(received_key)
-        except TypeError:
-            print("invalid input, key exchange")
+        except Exception as e:
+            print("invalid input, key exchange", e)
 
         secret_key_number = self._mod_power(received_key, self.private_key, p)
         self.secret_key = hashlib.sha256(str(secret_key_number).encode()).digest()
@@ -75,7 +75,6 @@ class Encryption(object):
         """
         encrypted_string = base64.b64decode(encrypted_string)
         starting_vector = encrypted_string[:self.BLOCK_SIZE]
-        print(starting_vector)
         cipher = AES.new(self.secret_key, AES.MODE_CBC, starting_vector)
         return self._unpad(cipher.decrypt(encrypted_string[self.BLOCK_SIZE:])).decode()
 
@@ -143,4 +142,4 @@ class Encryption(object):
             if power > 0:
                 return base * n * n % modulo
             else:
-                return ((n * n) / base) % modulo
+                return ((n * n) // base) % modulo

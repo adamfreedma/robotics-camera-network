@@ -10,13 +10,13 @@ gui_object.start()
 
 objects = []
 
+objects = [[50, 50]]
 while True:
-    objects = [[200, 300]]
 
     time.sleep(0.02)
-    # for obj in objects:
-    #     connection.send(obj)
+    for obj in objects:
+        connection.send(obj)
 
-    # for msg in gui_object.clickQueue:
-    #     connection.send(msg)
+    for msg in gui_object.clickQueue:
+        objects[0] = [int(msg) * 10, int(msg) * 10]
     gui_object.clickQueue = []
