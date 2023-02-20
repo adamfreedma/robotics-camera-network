@@ -17,11 +17,14 @@ class Database:
 
     def _create_table(self):
         create_table_statement = f"CREATE TABLE IF NOT EXISTS users(id integer  PRIMARY KEY AUTOINCREMENT," \
-            f" username text, password text)"
+            f" username text UNIQUE, password text)"
         self.cursor.execute(create_table_statement)
 
-    def check_login(self, username: str, password: str):
+    def insert_user(self, username: str, password: str):
+        insert_user_statement = f"INSERT into users(username, password) VALUES ('{username}', '{password}')"
+        self.cursor.execute(insert_user_statement)
 
+    def check_login(self, username: str, password: str):
         check_login_statement = f"SELECT password FROM users WHERE username = '{username}'"
         self.cursor.execute(check_login_statement)
         output = self.cursor.fetchone()
@@ -36,4 +39,5 @@ class Database:
 
 if __name__ == '__main__':
     database = Database("test.db")
-    print(database.check_login("admin", "123"))
+    database.insert_user("adm", "12")
+    print(database.check_login("adm", "12"))
