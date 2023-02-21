@@ -3,7 +3,7 @@ import select
 import threading
 from typing import Tuple, List
 import encryption
-
+import database
 
 class Connection(object):
 
@@ -16,6 +16,7 @@ class Connection(object):
         self.server_socket.bind(('0.0.0.0', self.server_port))
         self.server_socket.listen(client_count)
         self.encryptors = {}
+        self.database = database.Database('test.db')
 
         # clients
         self.open_client_sockets = {}
@@ -79,11 +80,12 @@ class Connection(object):
                 # checking for new connections
                 if curr_socket is self.server_socket:
                     (new_client, address) = self.server_socket.accept()
-                    print(f'{address[0]}, connected to the server')
-                    self.open_client_sockets[new_client] = address[0]
-                    # TODO - change to mac address check
-                    self.encryptors[new_client] = encryption.Encryption(new_client)
-
+                    print(new_client.getsockname())
+                    name = self.database.camera_name(new_client.getsockname()[4])
+                    if name:
+                        print(f'{address[0]}, {name},  connected to the server')
+                        self.open_client_sockets[new_client] = address[0]
+                        self.encryptors[new_client] = encryption.Encryption(new_client)
                 else:
                     input_data = ""
                     try:

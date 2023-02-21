@@ -7,7 +7,7 @@ class Database:
 
         self._connect(database_name)
         self.cursor = self.database.cursor()
-        self._create_table()
+        self._create_tables()
 
     def _connect(self, database_name):
         self.database: sqlite3.Connection = sqlite3.connect(database_name)
@@ -15,16 +15,63 @@ class Database:
     def _close(self):
         self.database.close()
 
-    def _create_table(self):
-        create_table_statement = f"CREATE TABLE IF NOT EXISTS users(id integer  PRIMARY KEY AUTOINCREMENT," \
-            f" username text UNIQUE, password text)"
-        self.cursor.execute(create_table_statement)
+    def _create_tables(self):
+        create_users_table_statement = f"CREATE TABLE IF NOT EXISTS users(id integer PRIMARY KEY AUTOINCREMENT," \
+            f" username text NOT NULL UNIQUE, password text)"
+        create_cameras_table_statement = f"CREATE TABLE IF NOT EXISTS cameras(id integer PRIMARY KEY AUTOINCREMENT," \
+            f" name text NOT NULL UNIQUE, mac text UNIQUE)"
+        self.cursor.execute(create_users_table_statement)
+        self.cursor.execute(create_cameras_table_statement)
 
     def insert_user(self, username: str, password: str):
-        insert_user_statement = f"INSERT into users(username, password) VALUES ('{username}', '{password}')"
-        self.cursor.execute(insert_user_statement)
+        try:
+            insert_user_statement = f"INSERT into users(username, password) VALUES ('{username}', '{password}')"
+            self.cursor.execute(insert_user_statement)
+            self.database.commit()
+        except sqlite3.IntegrityError:
+            success = False
+        else:
+            success = True
 
-    def check_login(self, username: str, password: str):
+        return success
+
+    def insert_camera(self, name: str, mac: str):
+        try:
+            insert_user_statement = f"INSERT into cameras(name, mac) VALUES ('{name}', '{mac}')"
+            self.cursor.execute(insert_user_statement)
+            self.database.commit()
+        except sqlite3.IntegrityError:
+            success = False
+        else:
+            success = True
+
+        return success
+
+    def update_camera(self, name: str, mac: str):
+        try:
+            insert_user_statement = f"UPDATE users SET password = '{name}' WHERE username = '{mac}'"
+            self.cursor.execute(insert_user_statement)
+            self.database.commit()
+        except sqlite3.IntegrityError:
+            success = False
+        else:
+            success = True
+
+        return success
+
+    def update_user(self, username: str, password: str):
+        try:
+            insert_user_statement = f"UPDATE users SET password = '{password}' WHERE username = '{username}'"
+            self.cursor.execute(insert_user_statement)
+            self.database.commit()
+        except sqlite3.IntegrityError:
+            success = False
+        else:
+            success = True
+
+        return success
+
+    def check_password(self, username: str, password: str):
         check_login_statement = f"SELECT password FROM users WHERE username = '{username}'"
         self.cursor.execute(check_login_statement)
         output = self.cursor.fetchone()
@@ -34,10 +81,22 @@ class Database:
 
         return result
 
+    def camera_name(self, mac: str):
+        camera_exists_statement = f"SELECT name FROM cameras WHERE mac = '{mac}'"
+        self.cursor.execute(camera_exists_statement)
+        name = ""
+        output = self.cursor.fetchone()
+        if output and len(output):
+            name = output[0]
+        return name
 
+    def _query_all(self):
+        self.cursor.execute("SELECT * FROM users")
+        return self.cursor.fetchall()
 
 
 if __name__ == '__main__':
     database = Database("test.db")
-    database.insert_user("adm", "12")
-    print(database.check_login("adm", "12"))
+    if not database.insert_camera("ad", "123"):
+        print("username already exists")
+    print(database.camera_name("1"))
