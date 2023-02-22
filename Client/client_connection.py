@@ -1,6 +1,6 @@
 import socket
 import threading
-from typing import Union, List
+from typing import Union, List, Any
 import encryption
 import time
 
@@ -23,19 +23,16 @@ class Connection(object):
         self.server_socket = socket.socket()
         self.server_socket.connect((self.server_ip, self.server_port))
         # checking if the server approves us
-        self.encryptor = encryption.Encryption(self.server_socket)
-        self.finished_exchange = False
         self.accepted = False
         self.wait_for_ack_thread = threading.Thread(target=self._wait_for_ack, daemon=True)
         self.wait_for_ack_thread.start()
+        self.encryptor = encryption.Encryption(self.server_socket)
 
     def _wait_for_ack(self):
         """
         waiting for the servers response
         :return: putting response into self.accepted
         """
-        while not self.encryptor.finished_exchange:
-            time.sleep(0.1)
         answer = ""
         try:
             answer = self.server_socket.recv(3).decode()
@@ -67,17 +64,17 @@ class Connection(object):
         msg.zfill(self.MSG_LENGTH)
         return msg
 
-    def send(self, data: Union[str, List[str]]):
+    def send(self, data: Union[Any, List[Any]]):
         """
         :param data: str or List[str]
         :return: sends the data to the server
         """
         # only sending if we are accepted
-        if self.accepted:
+        if self.accepted and self.encryptor.finished_exchange:
             msg = self._str_protocol(data)
             encrypted_msg = self.encryptor.encrypt(msg)
 
             try:
                 self.server_socket.send(encrypted_msg)
             except socket.error as e:
-                exit("Connection interrupted, send" + str(e))
+                print("Connection interrupted, send", e)

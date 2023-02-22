@@ -1,6 +1,5 @@
 import sqlite3
-
-
+from encryption import Encryption
 class Database:
 
     def __init__(self, database_name: str):
@@ -10,7 +9,7 @@ class Database:
         self._create_tables()
 
     def _connect(self, database_name):
-        self.database: sqlite3.Connection = sqlite3.connect(database_name)
+        self.database: sqlite3.Connection = sqlite3.connect(database_name, check_same_thread=False)
 
     def _close(self):
         self.database.close()
@@ -24,6 +23,7 @@ class Database:
         self.cursor.execute(create_cameras_table_statement)
 
     def insert_user(self, username: str, password: str):
+        password = Encryption.hash(password)
         try:
             insert_user_statement = f"INSERT into users(username, password) VALUES ('{username}', '{password}')"
             self.cursor.execute(insert_user_statement)
@@ -60,6 +60,7 @@ class Database:
         return success
 
     def update_user(self, username: str, password: str):
+        password = Encryption.hash(password)
         try:
             insert_user_statement = f"UPDATE users SET password = '{password}' WHERE username = '{username}'"
             self.cursor.execute(insert_user_statement)
@@ -72,6 +73,7 @@ class Database:
         return success
 
     def check_password(self, username: str, password: str):
+        password = Encryption.hash(password)
         check_login_statement = f"SELECT password FROM users WHERE username = '{username}'"
         self.cursor.execute(check_login_statement)
         output = self.cursor.fetchone()
@@ -97,6 +99,6 @@ class Database:
 
 if __name__ == '__main__':
     database = Database("test.db")
-    if not database.insert_camera("ad", "123"):
+    if not database.insert_user("adam6", "123"):
         print("username already exists")
-    print(database.camera_name("1"))
+    print(database.check_password("adam5", "123"))

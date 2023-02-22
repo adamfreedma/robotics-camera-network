@@ -1,7 +1,8 @@
 import cv2
 import threading
 import queue
-
+import detector
+import time
 
 class Camera(object):
 
@@ -20,6 +21,9 @@ class Camera(object):
 
     def _initialize_camera(self):
         self.capture = cv2.VideoCapture(self.camera_port)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.capture.set(cv2.CAP_PROP_FPS, 30)
 
     def get_frames(self):
         """
@@ -33,13 +37,13 @@ class Camera(object):
         :return: puts new frames into frames_queue
         """
         while self.running:
+            time.sleep(0.033)
             # reading frame
             ret, frame = self.capture.read()
 
             if ret == 0:
                 print("Error when capturing frame")
             else:
-                print("sccsess")
                 self.frames_queue.put(frame)
             # popping frames if the queue is too big
             while self.frames_queue.qsize() > self.MAX_QUEUE_SIZE:

@@ -2,6 +2,7 @@ import server_connection
 import time
 import merger
 import gui
+import detector
 
 gui_object = gui.GUI()
 gui_object.start()
@@ -17,8 +18,7 @@ def main():
         connection.incoming_messages = []
         connection.lock.release()
 
-        for cone in object_merger.merged_object_list:
-            gui_object.draw_cone(int(cone[0]), int(cone[1]))
+        gui_object.draw_cones([int(cone[0]) for cone in object_merger.merged_object_list], [int(cone[1]) for cone in object_merger.merged_object_list])
 
 
 if __name__ == '__main__':

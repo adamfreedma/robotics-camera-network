@@ -2,11 +2,12 @@ import client_connection
 import gui
 import camera
 import time
+import detector
 
 connection = client_connection.Connection("127.0.0.1", 3333)
 gui_object = gui.GUI()
 gui_object.start()
-# cam = camera.Camera(0)
+detector = detector.Detector("detector.weights", "detector.cfg", True, "vid.mp4")
 
 objects = []
 
@@ -17,6 +18,10 @@ while True:
     for obj in objects:
         connection.send(obj)
 
-    for msg in gui_object.clickQueue:
-        objects[0] = [int(msg) * 10, int(msg) * 10]
-    gui_object.clickQueue = []
+    if detector.results_queue.qsize():
+        result = detector.results_queue.get()[0]
+        print(result)
+        left = result[1] / 4
+        top = result[2] / 4
+        objects[0] = [left, top]
+    detector.results_queue.empty()

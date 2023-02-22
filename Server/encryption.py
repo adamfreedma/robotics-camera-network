@@ -53,9 +53,6 @@ class Encryption(object):
         secret_key_number = self._mod_power(received_key, self.private_key, p)
         self.secret_key = hashlib.sha256(str(secret_key_number).encode()).digest()
 
-        # sending accept message to the client since we finished the exchange
-        connection.send("ack".encode())
-
     def encrypt(self, string: str) -> bytes:
         """
         encrypts a string
@@ -89,7 +86,12 @@ class Encryption(object):
                                                                                 % self.BLOCK_SIZE)
 
     @staticmethod
-    def _unpad(string: str) -> str:
+    def hash(string: str):
+        return hashlib.sha256(string.encode()).hexdigest()
+
+
+    @staticmethod
+    def _unpad(string: bytes) -> bytes:
         """
         unpads the string after encryption+decryption
         :param string: the string to unpad

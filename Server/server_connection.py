@@ -4,6 +4,8 @@ import threading
 from typing import Tuple, List
 import encryption
 import database
+from scapy.layers.l2 import getmacbyip
+
 
 class Connection(object):
 
@@ -69,6 +71,10 @@ class Connection(object):
                     messages_to_send_cleared = [msg for msg in messages if msg[0] is client_socket]
                     messages = messages_to_send_cleared
 
+    @staticmethod
+    def _get_mac(ip_address):
+        return getmacbyip(ip_address)
+
     def _run(self):
         """
         main loop
@@ -80,12 +86,17 @@ class Connection(object):
                 # checking for new connections
                 if curr_socket is self.server_socket:
                     (new_client, address) = self.server_socket.accept()
-                    print(new_client.getsockname())
-                    name = self.database.camera_name(new_client.getsockname()[4])
+                    print(self._get_mac(address[0]))
+                    name = self.database.camera_name(self._get_mac(address[0]))
                     if name:
+                        # sending accept message to the client since it is approved in the database
+                        new_client.send("ack".encode())
                         print(f'{address[0]}, {name},  connected to the server')
                         self.open_client_sockets[new_client] = address[0]
                         self.encryptors[new_client] = encryption.Encryption(new_client)
+                    else:
+                        new_client.send("rej".encode())
+                        new_client.close()
                 else:
                     input_data = ""
                     try:
