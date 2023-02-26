@@ -3,19 +3,28 @@ import cv2
 import camera
 import queue
 import threading
+import math
+from typing import List
 
 
 class Detector:
 
-    def __init__(self, weights, config, show, path=0):
-        """init the detector
+    CONFIG_THRESHOLD = 0.2
+    NMS_THRESHOLD = 0.01
+    OBJECT_HEIGHT = 0.12
+    FRAME_WIDTH = 640
+    FRAME_HEIGHT = 480
 
-        Args:
-            weights (str): the path to the .weights file
-            config (str): the path to the .cfg file
+    def __init__(self, weights: str, config: str, show: bool, location: List[List[float, float, float],
+                                                                             List[float, float, float]], path=0, fov=60):
         """
-        self.CONFIG_THRESHOLD = 0.2
-        self.NMS_THRESHOLD = 0.01
+        :param weights: path the the .weights file of the DNN
+        :param config: path the the .cfg file of the DNN
+        :param show: show the output image with bounding boxes over the detections
+        :param location: camera location [[x, y, z], [yaw, pitch, roll]]
+        :param path: camera path, defaults to 0
+        """
+
         self.show = show
 
         self.net = cv2.dnn_DetectionModel(config, weights)
@@ -25,25 +34,90 @@ class Detector:
         self.net.setInputScale(1 / 255)
         self.net.setInputSwapRB(True)
         self.results_queue = queue.Queue()
+        self.locations_queue = queue.Queue()
 
         self.camera = camera.Camera(path)
+        self.fov = fov * math.pi / 180
+        self.pix_in_rad = self.FRAME_WIDTH / self.fov
+
+        self.camera_location = location[0]
+        self.camera_yaw = location[0][0]
+        self.camera_pitch = location[0][1]
+        self.camera_roll = location[0][2]
 
         self.detector_thread = threading.Thread(target=self.detect)
         self.detector_thread.start()
 
+        self.calc_locations_thread = threading.Thread(target=self.calc_locations)
+        self.calc_locations_thread.start()
+
+    @staticmethod
+    def _project_between_planes(theta: float, angle_between_planes: float):
+        """
+        project's theta between 2 planes
+        :param theta: the angle to project
+        :param angle_between_planes: the angle between the planes to project with (positive to decrease theta, negative to increase)
+        :return: the projected angle
+        """
+        if angle_between_planes > 0:
+            return math.atan(math.tan(theta)/ math.cos(angle_between_planes))
+        if angle_between_planes < 0:
+            return math.atan(math.tan(theta) / math.cos(angle_between_planes))
+
+    def calc_locations(self):
+
+        while True:
+            if not self.results_queue.qsize():
+                time.sleep(0.02)
+
+                bounding_boxes = self.results_queue.get()
+
+                locations = []
+
+                for bounding_box in bounding_boxes:
+                    class_id = bounding_box[0]
+                    left, top, width, height = bounding_box[1:]
+
+                    object_y = top + height / 2
+                    object_x = left + width / 2
+
+                    object_y_offset_pix = object_y - self.FRAME_HEIGHT / 2
+                    object_x_offset_pix = object_x - self.FRAME_WIDTH / 2
+
+                    object_y_offset_rad = object_y_offset_pix / self.pix_in_rad
+                    object_x_offset_rad = object_x_offset_pix / self.pix_in_rad
+
+                    pitch = self.camera_pitch + object_y_offset_rad
+                    floor_yaw = self._project_between_planes(object_y_offset_rad, -abs(pitch))
+
+                    height_diff = self.camera_location[2] - self.OBJECT_HEIGHT
+
+                    distance = math.tan(pitch) * height_diff
+                    x_position = distance * math.cos(floor_yaw)
+                    y_position = distance * math.sin(floor_yaw)
+
+                    locations.append((x_position, y_position))
+
+                self.locations_queue.put(locations)
+
+
+
+
+
+
+
+
+
+
     def detect(self):
         """detecets objects in the given frame
 
-        Args:
-            frame: the tested image
-
-        Returns:
-            list(tuple(int, int, int, int, int)): (class id, left, top, width, height)
+            puts list(tuple(int, int, int, int, int)): (class id, left, top, width, height) into results queue
         """
 
         while True:
             if not self.camera.frames_queue.qsize():
-                time.sleep(0.05)
+                time.sleep(0.02)
 
             frame = self.camera.frames_queue.get()
 

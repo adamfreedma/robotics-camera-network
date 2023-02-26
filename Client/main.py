@@ -7,9 +7,8 @@ import detector
 connection = client_connection.Connection("127.0.0.1", 3333)
 gui_object = gui.GUI()
 gui_object.start()
-detector = detector.Detector("detector.weights", "detector.cfg", True, "vid.mp4")
+detector = detector.Detector("detector.weights", "detector.cfg", True, [[0, 0, 0], [0, 0, 0]], "vid.mp4")
 
-objects = []
 
 objects = [[50, 50]]
 while True:
