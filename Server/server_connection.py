@@ -92,8 +92,7 @@ class Connection(object):
                         # sending accept message to the client since it is approved in the database
                         new_client.send("ack".encode())
                         print(f'{address[0]}, {name},  connected to the server')
-                        self.open_client_sockets[new_client] = address[0]
-                        self.encryptors[new_client] = encryption.Encryption(new_client)
+                        self.encryptors[new_client] = encryption.Encryption(new_client, self.open_client_sockets, address)
                     else:
                         new_client.send("rej".encode())
                         new_client.close()
@@ -109,7 +108,7 @@ class Connection(object):
                         print("from receive message")
 
                     if input_data == "":
-                        self._handle_disconnected_client(curr_socket)
+                        # self._handle_disconnected_client(curr_socket)
                         print("from empty message")
                     else:
                         self.lock.acquire()

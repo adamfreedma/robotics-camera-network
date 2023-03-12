@@ -7,7 +7,7 @@ import detector
 connection = client_connection.Connection("127.0.0.1", 3333)
 gui_object = gui.GUI()
 gui_object.start()
-detector = detector.Detector("detector.weights", "detector.cfg", True, [[0, 0, 0], [0, 0, 0]], "vid.mp4")
+detector = detector.Detector("detector.weights", "detector.cfg", True, ((100, 0, 1), (0, 45, 0)), "vid.mp4")
 
 
 objects = [[50, 50]]
@@ -17,10 +17,8 @@ while True:
     for obj in objects:
         connection.send(obj)
 
-    if detector.results_queue.qsize():
-        result = detector.results_queue.get()[0]
+    if detector.locations_queue.qsize():
+        result = detector.locations_queue.get()[0]
         print(result)
-        left = result[1] / 4
-        top = result[2] / 4
-        objects[0] = [left, top]
+        objects[0] = result
     detector.results_queue.empty()

@@ -13,15 +13,15 @@ class Encryption(object):
 
     BLOCK_SIZE = 16
 
-    def __init__(self, connection: socket.socket):
+    def __init__(self, connection: socket.socket, client_list, address):
 
         self.private_key = random.randint(2**25, 2**31)
         self.secret_key = bytes()
 
-        self.exchange_thread = threading.Thread(target=self._exchange, args=[connection])
+        self.exchange_thread = threading.Thread(target=self._exchange, args=[connection, client_list, address])
         self.exchange_thread.start()
 
-    def _exchange(self, connection: socket.socket):
+    def _exchange(self, connection: socket.socket, client_list, address):
         """
         Diffie Hellman key exhange with the client
         :param connection: socket of the client to exchange with
@@ -52,6 +52,7 @@ class Encryption(object):
 
         secret_key_number = self._mod_power(received_key, self.private_key, p)
         self.secret_key = hashlib.sha256(str(secret_key_number).encode()).digest()
+        client_list[connection] = address[0]
 
     def encrypt(self, string: str) -> bytes:
         """

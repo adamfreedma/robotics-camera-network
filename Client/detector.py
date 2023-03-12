@@ -4,7 +4,8 @@ import camera
 import queue
 import threading
 import math
-from typing import List
+import numpy as np
+from typing import Tuple
 
 
 class Detector:
@@ -12,16 +13,16 @@ class Detector:
     CONFIG_THRESHOLD = 0.2
     NMS_THRESHOLD = 0.01
     OBJECT_HEIGHT = 0.12
-    FRAME_WIDTH = 640
-    FRAME_HEIGHT = 480
+    FRAME_WIDTH = 1280
+    FRAME_HEIGHT = 720
 
-    def __init__(self, weights: str, config: str, show: bool, location: List[List[float, float, float],
-                                                                             List[float, float, float]], path=0, fov=60):
+    def __init__(self, weights: str, config: str, show: bool, location: Tuple[Tuple[float, float, float],
+                                                                             Tuple[float, float, float]], path=0, fov=60):
         """
         :param weights: path the the .weights file of the DNN
         :param config: path the the .cfg file of the DNN
         :param show: show the output image with bounding boxes over the detections
-        :param location: camera location [[x, y, z], [yaw, pitch, roll]]
+        :param location: camera location [[x, y, z], [yaw, pitch, roll]] in degrees
         :param path: camera path, defaults to 0
         """
 
@@ -37,13 +38,13 @@ class Detector:
         self.locations_queue = queue.Queue()
 
         self.camera = camera.Camera(path)
-        self.fov = fov * math.pi / 180
+        self.fov = math.radians(fov)
         self.pix_in_rad = self.FRAME_WIDTH / self.fov
 
         self.camera_location = location[0]
-        self.camera_yaw = location[0][0]
-        self.camera_pitch = location[0][1]
-        self.camera_roll = location[0][2]
+        self.camera_yaw = math.radians(location[1][0])
+        self.camera_pitch = math.radians(location[1][1])
+        self.camera_roll = math.radians(location[1][2])
 
         self.detector_thread = threading.Thread(target=self.detect)
         self.detector_thread.start()
@@ -59,10 +60,20 @@ class Detector:
         :param angle_between_planes: the angle between the planes to project with (positive to decrease theta, negative to increase)
         :return: the projected angle
         """
-        if angle_between_planes > 0:
+        if angle_between_planes >= 0:
             return math.atan(math.tan(theta)/ math.cos(angle_between_planes))
         if angle_between_planes < 0:
             return math.atan(math.tan(theta) / math.cos(angle_between_planes))
+
+    @staticmethod
+    def rotate(vector: Tuple[float, float], yaw: float, degrees=False) -> list:
+        # converting angle units
+
+        if degrees:
+            yaw = math.radians(yaw)
+
+        rotation_matrix = [[math.cos(yaw), -math.sin(yaw)], [math.sin(yaw), math.cos(yaw)]]
+        return np.dot(vector, rotation_matrix)
 
     def calc_locations(self):
 
@@ -88,26 +99,22 @@ class Detector:
                     object_x_offset_rad = object_x_offset_pix / self.pix_in_rad
 
                     pitch = self.camera_pitch + object_y_offset_rad
-                    floor_yaw = self._project_between_planes(object_y_offset_rad, -abs(pitch))
+                    floor_yaw = self._project_between_planes(object_x_offset_rad, -abs(pitch))
 
                     height_diff = self.camera_location[2] - self.OBJECT_HEIGHT
-
                     distance = math.tan(pitch) * height_diff
                     x_position = distance * math.cos(floor_yaw)
                     y_position = distance * math.sin(floor_yaw)
 
+                    # TODO - rotate by yaw and add camera location
+
+                    x_position, y_position = self.rotate((x_position, y_position), self.camera_yaw)
+                    x_position += self.camera_location[0]
+                    y_position += self.camera_location[1]
+
                     locations.append((x_position, y_position))
 
                 self.locations_queue.put(locations)
-
-
-
-
-
-
-
-
-
 
     def detect(self):
         """detecets objects in the given frame

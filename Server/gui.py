@@ -41,7 +41,6 @@ class GUI(threading.Thread):
         self.panel = wx.Panel(self.frame, wx.ID_ANY)
         self.paint_dc = wx.ClientDC(self.panel)
         self.bitmap = wx.Bitmap(500, 500)
-        self.memory_dc = wx.MemoryDC(self.bitmap)
 
         self.frame.Show()
         self.frame.Centre()
@@ -90,11 +89,7 @@ class GUI(threading.Thread):
         :return:
         """
 
-        if self.panel and self.memory_dc:
-            self.memory_dc.SetPen(wx.Pen('black', 10))
-            self.memory_dc.SetBrush(wx.Brush('gray'))
-            self.memory_dc.DrawRectangle(self.FIELD_START_X, self.FIELD_START_Y, self.FIELD_END_X - self.FIELD_START_X,
-                                         self.FIELD_END_Y - self.FIELD_START_Y)
+        if self.panel and self.paint_dc:
 
             for x, y in zip(x_list, y_list):
                 x += self.FIELD_START_X
@@ -105,11 +100,9 @@ class GUI(threading.Thread):
 
                 print("draw", x, y)
 
-                self.memory_dc.SetPen(wx.Pen('black', 1))
-                self.memory_dc.SetBrush(self.CONE_BRUSH)
-                self.memory_dc.DrawCircle(x, y, self.OBJECT_RADIUS)
-                self.paint_dc.DrawBitmap(self.bitmap, 0, 0, True)
-            print("thaw")
+                self.paint_dc.SetPen(wx.Pen('black', 1))
+                self.paint_dc.SetBrush(self.CONE_BRUSH)
+                self.paint_dc.DrawCircle(x, y, self.OBJECT_RADIUS)
 
 
     def do_nothing(self, event):
