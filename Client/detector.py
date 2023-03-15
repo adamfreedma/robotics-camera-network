@@ -103,8 +103,8 @@ class Detector:
 
                     height_diff = self.camera_location[2] - self.OBJECT_HEIGHT
                     distance = math.tan(pitch) * height_diff
-                    x_position = distance * math.cos(floor_yaw)
-                    y_position = distance * math.sin(floor_yaw)
+                    x_position = distance * math.sin(floor_yaw)
+                    y_position = distance * math.cos(floor_yaw)
 
                     # TODO - rotate by yaw and add camera location
 

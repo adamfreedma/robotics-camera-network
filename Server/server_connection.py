@@ -1,7 +1,7 @@
 import socket
 import select
 import threading
-from typing import Tuple, List
+from typing import Tuple, List, Dict
 import encryption
 import database
 from scapy.layers.l2 import getmacbyip
@@ -17,7 +17,7 @@ class Connection(object):
         self.server_socket = socket.socket()
         self.server_socket.bind(('0.0.0.0', self.server_port))
         self.server_socket.listen(client_count)
-        self.encryptors = {}
+        self.encryptors: Dict[socket.socket, encryption.Encryption] = {}
         self.database = database.Database('test.db')
 
         # clients
@@ -75,6 +75,14 @@ class Connection(object):
     def _get_mac(ip_address):
         return getmacbyip(ip_address)
 
+    @staticmethod
+    def unpack_protocol(msg: str) -> Tuple[float, float]:
+        # move decimal spot 5 places
+        x = float(msg[:10]) / 100000
+        y = float(msg[10:]) / 100000
+
+        return x, y
+
     def _run(self):
         """
         main loop
@@ -92,23 +100,24 @@ class Connection(object):
                         # sending accept message to the client since it is approved in the database
                         new_client.send("ack".encode())
                         print(f'{address[0]}, {name},  connected to the server')
-                        self.encryptors[new_client] = encryption.Encryption(new_client, self.open_client_sockets, address)
+                        self.encryptors[new_client] = encryption.Encryption(new_client)
+                        self.open_client_sockets[new_client] = address[0]
                     else:
                         new_client.send("rej".encode())
                         new_client.close()
-                else:
+                elif self.encryptors[curr_socket].exchange_done:
                     input_data = ""
                     try:
                         # getting input data
                         encrypted_input_data = curr_socket.recv(64)
-                        input_data = self.encryptors[curr_socket].decrypt(encrypted_input_data)
+                        input_data = self.encryptors[curr_socket].decrypt(encrypted_input_data).zfill(20)
                     except Exception as e:
                         print(str(e))
                         self._handle_disconnected_client(curr_socket)
                         print("from receive message")
 
                     if input_data == "":
-                        # self._handle_disconnected_client(curr_socket)
+                        self._handle_disconnected_client(curr_socket)
                         print("from empty message")
                     else:
                         self.lock.acquire()

@@ -14,11 +14,12 @@ def main():
     while True:
         connection.lock.acquire()
         for msg in connection.incoming_messages:
-            object_merger.insert_client_object(float(msg[1][:10]), float(msg[1][10:]))
+            x, y = connection.unpack_protocol(msg[1])
+            object_merger.insert_client_object(x, y)
         connection.incoming_messages = []
         connection.lock.release()
 
-        gui_object.draw_cones([int(cone[0]) for cone in object_merger.merged_object_list], [int(cone[1]) for cone in object_merger.merged_object_list])
+        gui_object.draw_cones(object_merger.merged_object_list)
 
 
 if __name__ == '__main__':

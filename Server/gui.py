@@ -3,7 +3,8 @@ import time
 import wx
 from wx.py.shell import ShellFrame as Frame
 import numpy as np
-from typing import List
+from typing import List, Tuple, Union
+import math_funcs
 
 
 class GUI(threading.Thread):
@@ -14,7 +15,10 @@ class GUI(threading.Thread):
     FIELD_END_X = 550
     FIELD_START_Y = 50
     FIELD_END_Y = 350
-    FIELD_FRAME_WIDTH = 50
+    FIELD_START_X_METERS = -3
+    FIELD_END_X_METERS = 3
+    FIELD_START_Y_METERS = -3
+    FIELD_END_Y_METERS = 3
     panel = None
     frame = None
     paint_dc = None
@@ -52,10 +56,6 @@ class GUI(threading.Thread):
     def create_components(self):
         self.create_field()
 
-    def create_login_screen(self):
-        text_box = wx
-
-
     def create_button(self, id, text, position, callback_function):
         button = wx.Button(self.panel, id, text, position)
         button.Bind(wx.EVT_BUTTON, self.default_thread_callback)
@@ -65,23 +65,18 @@ class GUI(threading.Thread):
             self.paint_lock.acquire()
             self.paint_dc.SetPen(wx.Pen('black', 10))
             self.paint_dc.SetBrush(wx.Brush('gray'))
-            print("circle")
             self.paint_dc.DrawRectangle(self.FIELD_START_X, self.FIELD_START_Y, self.FIELD_END_X - self.FIELD_START_X,
                                         self.FIELD_END_Y - self.FIELD_START_Y)
         self.paint_lock.release()
 
-    @staticmethod
-    def _limit(value: int, min_value: int, max_value: int) -> int:
-        """
-        returns a value within a limit of value
-        :param value: value to be limited
-        :param min_value: low limit
-        :param max_value: high limit
-        :return: 
-        """
-        return min(max(value, min_value), max_value)
+    def _scale_to_field(self, x: float, y: float) -> Tuple[int, int]:
 
-    def draw_cones(self, x_list: List[int], y_list: List[int]):
+        x = int(math_funcs.dead_band(x, (self.FIELD_START_X_METERS, self.FIELD_START_X), (self.FIELD_END_X_METERS, self.FIELD_END_X)))
+        y = int(math_funcs.dead_band(y, (self.FIELD_START_Y_METERS, self.FIELD_START_Y), (self.FIELD_END_Y_METERS, self.FIELD_END_Y)))
+
+        return x, y
+
+    def draw_cones(self, cones: List[Tuple[float, float]]):
         """
         draws a cone (yellow circle) on the screen
         :param x_list: all object x positions
@@ -91,22 +86,15 @@ class GUI(threading.Thread):
 
         if self.panel and self.paint_dc:
 
-            for x, y in zip(x_list, y_list):
-                x += self.FIELD_START_X
-                y += self.FIELD_START_Y
+            self.create_field()
 
-                x = self._limit(x, self.FIELD_START_X, self.FIELD_END_X)
-                y = self._limit(y, self.FIELD_START_Y, self.FIELD_END_Y)
-
+            for cone in cones:
+                x, y = self._scale_to_field(*cone[:2])
                 print("draw", x, y)
 
                 self.paint_dc.SetPen(wx.Pen('black', 1))
                 self.paint_dc.SetBrush(self.CONE_BRUSH)
                 self.paint_dc.DrawCircle(x, y, self.OBJECT_RADIUS)
-
-
-    def do_nothing(self, event):
-        pass
 
     def default_thread_callback(self, event):
         callback_thread = threading.Thread(target=self.default_callback, args=[event])

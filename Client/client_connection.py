@@ -1,8 +1,9 @@
 import socket
 import threading
 from typing import Union, List, Any
-import encryption
-import time
+import Client.encryption as encryption
+import numpy
+
 
 class Connection(object):
 
@@ -46,19 +47,31 @@ class Connection(object):
             print("rejected by the server")
             self.accepted = False
 
+    @staticmethod
+    def _float_protocol(num: float, length) -> str:
+        # round up to 5 digits after the decimal point
+        num = round(num, int(length / 2))
+        num = str(num).replace('.', '')
+        return num
+
     def _str_protocol(self, data: Union[any, List[any]]) -> str:
         """
         :param data: data to send
         :return: the data according to the protocol
         """
         msg = ""
+        allowed_types = (list, tuple)
+        float_types = (float, numpy.floating)
         # making the str a list
-        if type(data) != list:
+        if not isinstance(data, allowed_types):
             data = [data]
         # making a fixed length to each part of the message
         part_length = self.MSG_LENGTH // len(data)
 
         for part in data:
+            if isinstance(part, float_types):
+                part = self._float_protocol(part, part_length)
+
             msg += str(part).zfill(part_length)
 
         msg.zfill(self.MSG_LENGTH)
