@@ -27,8 +27,10 @@ def two_points(value: float, point1: Tuple[float, float], point2: Tuple[float, f
 
 def dead_band(value: float, point1: Tuple[float, float], point2: Tuple[float, float]) -> float:
 
-    min_value = max(point1[0], point2[0])
+    min_value = min(point1[1], point2[1])
     max_value = max(point1[1], point2[1])
+
+    # print(two_points(value, point1, point2))
 
     return limit(two_points(value, point1, point2), min_value, max_value)
 

@@ -9,7 +9,7 @@ class Merger(object):
     merges the object locations sent from all clients
     """
 
-    MAX_DISTANCE_TO_MERGE = 15
+    MAX_DISTANCE_TO_MERGE = 0.2
     TIME_TO_DELETE = 1
     MAX_OBJECT_LIST_SIZE = 10
 
@@ -44,14 +44,16 @@ class Merger(object):
             self.lock.acquire()
             self.client_object_list.extend(self.merged_object_list)
 
-            for new_object in self.client_object_list:
+            not_old_objects = [obj for obj in self.client_object_list if (time.time() - obj[2] < self.TIME_TO_DELETE)]
+
+            for new_object in not_old_objects:
                 merge_with = []
 
                 for existing_object in merge_list:
                     if _distance(existing_object, new_object) < self.MAX_DISTANCE_TO_MERGE:
                         merge_with.append(existing_object)
 
-                if not merge_with and time.time() - new_object[2] < self.TIME_TO_DELETE:
+                if not merge_with:
                     # there is no one to merge with, add to the list
                     merge_list.append(new_object)
                 else:

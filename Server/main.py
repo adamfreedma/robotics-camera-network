@@ -18,7 +18,6 @@ def main():
             object_merger.insert_client_object(x, y)
         connection.incoming_messages = []
         connection.lock.release()
-
         gui_object.draw_cones(object_merger.merged_object_list)
 
 

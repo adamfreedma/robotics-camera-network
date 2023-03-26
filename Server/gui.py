@@ -76,7 +76,7 @@ class GUI(threading.Thread):
 
         return x, y
 
-    def draw_cones(self, cones: List[Tuple[float, float]]):
+    def draw_cones(self, cones: List[List[float]]):
         """
         draws a cone (yellow circle) on the screen
         :param x_list: all object x positions

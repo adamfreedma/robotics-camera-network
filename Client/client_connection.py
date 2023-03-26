@@ -50,7 +50,7 @@ class Connection(object):
     @staticmethod
     def _float_protocol(num: float, length) -> str:
         # round up to 5 digits after the decimal point
-        num = round(num, int(length / 2))
+        num = format(num, f".{int(length / 2)}f")
         num = str(num).replace('.', '')
         return num
 
