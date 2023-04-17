@@ -8,6 +8,7 @@ class RobotConnection:
     TABLE_NAME = "CameraNetwork"
     X_ENTRY_NAME = "ConePositionX"
     Y_ENTRY_NAME = "ConePositionY"
+    DIRECTION_ENTRY_NAME = "Direction"
 
     def __init__(self):
 
@@ -21,6 +22,7 @@ class RobotConnection:
         self.camera_network_table = self.nt_instance.getTable(self.TABLE_NAME)
         self.cone_position_x_entry = self.camera_network_table.getEntry(self.X_ENTRY_NAME)
         self.cone_position_y_entry = self.camera_network_table.getEntry(self.Y_ENTRY_NAME)
+        self.direction_entry = self.camera_network_table.getEntry(self.DIRECTION_ENTRY_NAME)
 
     @staticmethod
     def _update(data: Any, entry: networktables.NetworkTableEntry):
@@ -29,3 +31,6 @@ class RobotConnection:
     def update_cone(self, cone: Tuple[float, float]):
         self._update(cone[0], self.cone_position_x_entry)
         self._update(cone[1], self.cone_position_y_entry)
+
+    def update_direction(self, direction: str):
+        self._update(direction, self.direction_entry)
