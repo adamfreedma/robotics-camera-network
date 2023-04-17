@@ -98,7 +98,7 @@ class Database:
 
 
 if __name__ == '__main__':
-    database = Database("test.db")
-    if not database.insert_user("adam6", "123"):
+    database = Database("robotics.db")
+    if not database.insert_user("adam", "123"):
         print("username already exists")
-    print(database.check_password("adam5", "123"))
+    print(database.check_password("adam", "123"))
