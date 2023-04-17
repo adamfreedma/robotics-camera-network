@@ -13,8 +13,8 @@ class Detector:
     CONFIG_THRESHOLD = 0.2
     NMS_THRESHOLD = 0.01
     OBJECT_HEIGHT = 0.12
-    FRAME_WIDTH = 1280
-    FRAME_HEIGHT = 720
+    FRAME_WIDTH = 640
+    FRAME_HEIGHT = 480
 
     def __init__(self, weights: str, config: str, show: bool, location: Tuple[Tuple[float, float, float],
                                                                              Tuple[float, float, float]], path=0, fov=60):
@@ -105,9 +105,7 @@ class Detector:
                     distance = math.tan(pitch) * height_diff
                     x_position = distance * math.sin(floor_yaw)
                     y_position = distance * math.cos(floor_yaw)
-
-                    # TODO - rotate by yaw and add camera location
-
+                    
                     x_position, y_position = self.rotate((x_position, y_position), self.camera_yaw)
                     x_position += self.camera_location[0]
                     y_position += self.camera_location[1]
