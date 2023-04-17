@@ -1,5 +1,4 @@
 import client_connection
-import gui
 import camera
 import time
 import detector
@@ -7,7 +6,7 @@ import detector
 connection = client_connection.Connection("127.0.0.1", 3333)
 detector = detector.Detector("detector.weights", "detector.cfg", True, ((0, 0, 1.5), (0, 30, 0)), 0)
 
-objects = [[50, 50]]
+objects = []
 while True:
 
     time.sleep(0.02)
@@ -15,10 +14,7 @@ while True:
         connection.send(obj)
 
     if detector.locations_queue.qsize():
-        result = detector.locations_queue.get()[0]
-        if len(objects):
-            objects[0] = result
-        else:
+        for result in detector.locations_queue.get():
             objects.append(result)
     else:
         objects = []
