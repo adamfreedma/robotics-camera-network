@@ -1,7 +1,7 @@
 import socket
 import threading
 from typing import Union, List, Any
-import Client.encryption as encryption
+import encryption as encryption
 import numpy
 
 
