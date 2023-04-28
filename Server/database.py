@@ -92,8 +92,12 @@ class Database:
             name = output[0]
         return name
 
-    def _query_all(self):
+    def get_users(self):
         self.cursor.execute("SELECT * FROM users")
+        return self.cursor.fetchall()
+    
+    def get_cameras(self):
+        self.cursor.execute("SELECT * FROM cameras")
         return self.cursor.fetchall()
 
 

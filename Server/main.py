@@ -37,6 +37,13 @@ def handle_login_request(username, password):
         pub.sendMessage("login_answer", answer="ack")
     else:
         pub.sendMessage("login_answer", answer="rej")
+        
+def handle_refresh_request():
+    users_list = database.get_users()
+    pub.sendMessage("users_list", users_list=users_list)
+    
+    cameras_list = database.get_cameras()
+    pub.sendMessage("cameras_list", cameras_list=cameras_list)
 
 def handle_direction_change(direction):
     robot_conn.update_direction(direction)
@@ -47,6 +54,7 @@ def main():
     main_server_thread.start()
 
     pub.subscribe(handle_login_request, "login_request")
+    pub.subscribe(handle_refresh_request, "refresh_request")
     pub.subscribe(handle_direction_change, "direction")
 
     main_frame = gui.MainFrame()

@@ -9,10 +9,10 @@ import math_funcs
 app = wx.App(False)
 
 BACKGROUND_COLOR = wx.LIGHT_GREY
-SCREEN_HEIGT = GetSystemMetrics(1)
+SCREEN_HEIGHT = GetSystemMetrics(1)
 SCREEN_WIDTH = GetSystemMetrics(0)
-SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGT)
-DIRECTION_BUTTON_SIZE = (int(SCREEN_WIDTH / 16), int(SCREEN_HEIGT / 16))
+SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
+DIRECTION_BUTTON_SIZE = (int(SCREEN_WIDTH / 16), int(SCREEN_HEIGHT / 16))
 CLICK_LENGTH_MS = 500
 
 class MainPanel(wx.Panel):
@@ -75,33 +75,33 @@ class LoginPanel(wx.Panel):
 
         # creating a vertical sizer
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.AddSpacer(int(SCREEN_HEIGT / 4))
+        sizer.AddSpacer(int(SCREEN_HEIGHT / 4))
         user_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        label_font = wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        self.label_font = wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
         
         # adding username input 
         user_label = wx.StaticText(self, -1, label="Username:")
         user_label.SetForegroundColour(wx.BLACK)
-        user_label.SetFont(label_font)
+        user_label.SetFont(self.label_font)
         self.user = wx.TextCtrl(self, -1, name="username", size=(200, -1))
 
         user_sizer.Add(user_label, 0, wx.ALL, 5)
         user_sizer.Add(self.user , 0, wx.ALL, 5)
         sizer.Add(user_sizer, 0, wx.CENTER | wx.ALL, 5)
-        sizer.AddSpacer(int(SCREEN_HEIGT / 12))
+        sizer.AddSpacer(int(SCREEN_HEIGHT / 12))
 
         # adding password input 
         password_sizer = wx.BoxSizer(wx.HORIZONTAL)
         password_label = wx.StaticText(self, 1, label="Password:")
-        password_label.SetFont(label_font)
+        password_label.SetFont(self.label_font)
         self.password = wx.TextCtrl(self, -1, name="password", size=(200, -1))
         self.password.Bind(wx.EVT_BUTTON, self.on_login)
 
         password_sizer.Add(password_label, 0, wx.ALL, 5)
         password_sizer.Add(self.password, 0, wx.ALL, 5)
         sizer.Add(password_sizer, 0, wx.CENTER | wx.ALL, 5)
-        sizer.AddSpacer(int(SCREEN_HEIGT / 12))
+        sizer.AddSpacer(int(SCREEN_HEIGHT / 12))
 
         # confirmation button
         buttonBox = wx.BoxSizer(wx.HORIZONTAL)
@@ -179,12 +179,15 @@ class ControlPanel(wx.Panel):
 
         side_arrows_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        side_arrows_sizer.Add(left_button, 0, wx.ALIGN_CENTER)
+        side_arrows_sizer.Add(right_button, 0, wx.ALIGN_CENTER)
+    
         controls_sizer.Add(forwards_button, 0, wx.ALIGN_CENTER)
         controls_sizer.Add(side_arrows_sizer, 0, wx.ALIGN_CENTER)
         controls_sizer.Add(backwards_button, 0, wx.ALIGN_CENTER)
 
-        side_arrows_sizer.Add(left_button, 0, wx.ALIGN_CENTER)
-        side_arrows_sizer.Add(right_button, 0, wx.ALIGN_CENTER)
+        
+        controls_sizer.AddSpacer(int(SCREEN_HEIGHT / 4))
 
         #creating a timer for the direction "release"
         self.timer = wx.Timer(self)
@@ -194,12 +197,11 @@ class ControlPanel(wx.Panel):
         manager_button = wx.Button(self, -1, "Manager", size=DIRECTION_BUTTON_SIZE)
         manager_button.Bind(wx.EVT_BUTTON, self.on_manager)
         
-        controls_sizer.Add(manager_button)
+        controls_sizer.Add(manager_button, 0, wx.ALIGN_CENTER)
         
         # setting the field painter
         self.paint_field()
         pub.subscribe(self.paint_cones, "cones_list")
-
         
         # arrange the frame
         self.SetSizer(sizer)
@@ -273,39 +275,71 @@ class ManagerPanel(wx.Panel):
 
         # creating a hotizontal sizer to split users and cameras
         camera_users_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        camera_users_sizer.AddSpacer(int(SCREEN_HEIGT / 8))
+        camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 5))
 
         # creating a vertical sizer for the cameras
         self.camera_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.camera_sizer.AddSpacer(int(SCREEN_HEIGT / 4))
+        self.camera_sizer.AddSpacer(int(SCREEN_HEIGHT / 8))
 
-        label_font = wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        self.label_font = wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
         
         camera_label = wx.StaticText(self, -1, label="camera list:")
         camera_label.SetForegroundColour(wx.BLACK)
-        camera_label.SetFont(label_font)
+        camera_label.SetFont(self.label_font)
 
-        self.camera_sizer.Add(camera_label, 0, wx.ALL, 5)
+        self.camera_sizer.Add(camera_label, 0, wx.ALIGN_TOP, 5)
         
-        camera_users_sizer.Add(self.camera_sizer, 0, wx.CENTER | wx.ALL, 5)
+        camera_users_sizer.Add(self.camera_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
+        camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 2))
 
 
         # creating a vertical sizer for the users
         self.users_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.users_sizer.AddSpacer(int(SCREEN_HEIGT / 4))
+        self.users_sizer.AddSpacer(int(SCREEN_HEIGHT / 8))
         
         users_label = wx.StaticText(self, 1, label="users list:")
         users_label.SetForegroundColour(wx.BLACK)
-        users_label.SetFont(label_font)
+        users_label.SetFont(self.label_font)
         
-        self.users_sizer.Add(users_label, 0, wx.ALL, 5)
+        self.users_sizer.Add(users_label, 0, wx.ALIGN_TOP, 5)
 
-        camera_users_sizer.Add(self.users_sizer, 0, wx.CENTER | wx.ALL, 5)
+        camera_users_sizer.Add(self.users_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
+
+        # subscribe for list refreshes        
+        pub.subscribe(self.handle_users_refresh, "users_list")
+        pub.subscribe(self.handle_cameras_refresh, "cameras_list")
+        
+        self.refresh_lists()
+
 
         # arrange the frame
         self.SetSizer(camera_users_sizer)
         self.Layout()
         self.Hide()
+        
+        
+    def refresh_lists(self):
+        pub.sendMessage("refresh_request")
+        
+    def handle_users_refresh(self, users_list):
+        print(users_list)
+        for user in users_list:
+            label = wx.StaticText(self, 1, label=user[1])
+            label.SetForegroundColour(wx.BLACK)
+            label.SetFont(self.label_font)
+            
+            self.users_sizer.Add(label, 0, wx.ALIGN_TOP, 5)
+            
+        
+    def handle_cameras_refresh(self, cameras_list):
+        print(cameras_list)
+        for camera in cameras_list:
+            label = wx.StaticText(self, 1, label=camera[1])
+            label.SetForegroundColour(wx.BLACK)
+            label.SetFont(self.label_font)
+            
+            self.camera_sizer.Add(label, 0, wx.ALIGN_TOP, 5)
+        
 
 if __name__ == "__main__":
     frame = MainFrame()
