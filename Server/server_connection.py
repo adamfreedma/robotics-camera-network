@@ -18,7 +18,7 @@ class Connection(object):
         self.server_socket.bind(('0.0.0.0', self.server_port))
         self.server_socket.listen(client_count)
         self.encryptors: Dict[socket.socket, encryption.Encryption] = {}
-        self.database = database.Database('test.db')
+        self.database = database.Database('robotics.db')
 
         # clients
         self.open_client_sockets = {}

@@ -99,6 +99,7 @@ class Database:
 
 if __name__ == '__main__':
     database = Database("robotics.db")
+    database.insert_camera("cam1", "ff:ff:ff:ff:ff:ff")
     if not database.insert_user("adam", "123"):
         print("username already exists")
     print(database.check_password("adam", "123"))
