@@ -16,7 +16,7 @@ class Encryption(object):
         self.private_key = random.randint(2**25, 2**31)
         self.secret_key = bytes()
 
-        self.exchange_thread = threading.Thread(target=self.exchange, args=[connection])
+        self.exchange_thread = threading.Thread(target=self.exchange, args=[connection], daemon=True)
         self.exchange_thread.start()
         self.finished_exchange = False
 

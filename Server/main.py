@@ -43,7 +43,7 @@ def handle_direction_change(direction):
 
 
 def main():
-    main_server_thread = threading.Thread(target=main_server, args=[])
+    main_server_thread = threading.Thread(target=main_server, args=[], daemon=True)
     main_server_thread.start()
 
     pub.subscribe(handle_login_request, "login_request")

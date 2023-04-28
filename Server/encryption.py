@@ -19,7 +19,7 @@ class Encryption(object):
         self.secret_key = bytes()
         self.exchange_done = False
 
-        self.exchange_thread = threading.Thread(target=self._exchange, args=[connection])
+        self.exchange_thread = threading.Thread(target=self._exchange, args=[connection], daemon=True)
         self.exchange_thread.start()
 
     def _exchange(self, connection: socket.socket):

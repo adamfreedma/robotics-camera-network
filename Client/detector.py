@@ -46,10 +46,10 @@ class Detector:
         self.camera_pitch = math.radians(location[1][1])
         self.camera_roll = math.radians(location[1][2])
 
-        self.detector_thread = threading.Thread(target=self.detect)
+        self.detector_thread = threading.Thread(target=self.detect, daemon=True)
         self.detector_thread.start()
 
-        self.calc_locations_thread = threading.Thread(target=self.calc_locations)
+        self.calc_locations_thread = threading.Thread(target=self.calc_locations, daemon=True)
         self.calc_locations_thread.start()
 
     @staticmethod
