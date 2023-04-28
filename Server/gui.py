@@ -15,9 +15,6 @@ SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGT)
 DIRECTION_BUTTON_SIZE = (int(SCREEN_WIDTH / 16), int(SCREEN_HEIGT / 16))
 CLICK_LENGTH_MS = 500
 
-#background pictures
-LOGIN_SCREEN_BACKGROUND = wx.Image(r"gui_pictures\login_screen_background.png", wx.BITMAP_TYPE_ANY).Rescale(SCREEN_WIDTH, SCREEN_HEIGT).ConvertToBitmap()
-
 class MainPanel(wx.Panel):
 
     def __init__(self, parent):
@@ -33,6 +30,7 @@ class MainPanel(wx.Panel):
         self.login = LoginPanel(self, self.frame)
         # self.registration = RegistrationPanel(self, self.frame)
         self.control = ControlPanel(self, self.frame)
+        self.manager = ManagerPanel(self, self.frame)
 
         box.Add(self.login)
         # box.Add(self.registration)
@@ -166,10 +164,6 @@ class ControlPanel(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddSpacer(int(SCREEN_WIDTH / 2))
 
-        # setting the field painter
-        self.paint_field()
-        pub.subscribe(self.paint_cones, "cones_list")
-
         controls_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(controls_sizer, 0, wx.ALIGN_TOP)
         
@@ -196,6 +190,17 @@ class ControlPanel(wx.Panel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.stop)
         
+        # creating manager frame button
+        manager_button = wx.Button(self, -1, "Manager", size=DIRECTION_BUTTON_SIZE)
+        manager_button.Bind(wx.EVT_BUTTON, self.on_manager)
+        
+        controls_sizer.Add(manager_button)
+        
+        # setting the field painter
+        self.paint_field()
+        pub.subscribe(self.paint_cones, "cones_list")
+
+        
         # arrange the frame
         self.SetSizer(sizer)
         self.Layout()
@@ -219,6 +224,10 @@ class ControlPanel(wx.Panel):
     def on_left(self, event):
         pub.sendMessage("direction", direction="L")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
+        
+    def on_manager(self, event):
+        self.Hide()
+        self.parent.manager.Show()
 
     def paint_field(self):
         """set up the device context (DC) for painting"""
@@ -238,7 +247,6 @@ class ControlPanel(wx.Panel):
         """
 
         self.paint_field()
-        print(len(cones))
         for cone in cones:
             x, y = self._scale_to_field(*cone[:2])
 
@@ -251,6 +259,53 @@ class ControlPanel(wx.Panel):
         y = int(math_funcs.dead_band(y, (self.FIELD_START_Y_METERS, self.FIELD_START_Y), (self.FIELD_END_Y_METERS, self.FIELD_END_Y)))
 
         return x, y
+
+
+class ManagerPanel(wx.Panel):
+
+    def __init__(self, parent, frame):
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=SCREEN_SIZE,
+                          style=wx.SIMPLE_BORDER)
+
+        self.frame = frame
+        self.parent = parent
+        self.SetBackgroundColour(BACKGROUND_COLOR)
+
+        # creating a hotizontal sizer to split users and cameras
+        camera_users_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        camera_users_sizer.AddSpacer(int(SCREEN_HEIGT / 8))
+
+        # creating a vertical sizer for the cameras
+        self.camera_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.camera_sizer.AddSpacer(int(SCREEN_HEIGT / 4))
+
+        label_font = wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
+        
+        camera_label = wx.StaticText(self, -1, label="camera list:")
+        camera_label.SetForegroundColour(wx.BLACK)
+        camera_label.SetFont(label_font)
+
+        self.camera_sizer.Add(camera_label, 0, wx.ALL, 5)
+        
+        camera_users_sizer.Add(self.camera_sizer, 0, wx.CENTER | wx.ALL, 5)
+
+
+        # creating a vertical sizer for the users
+        self.users_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.users_sizer.AddSpacer(int(SCREEN_HEIGT / 4))
+        
+        users_label = wx.StaticText(self, 1, label="users list:")
+        users_label.SetForegroundColour(wx.BLACK)
+        users_label.SetFont(label_font)
+        
+        self.users_sizer.Add(users_label, 0, wx.ALL, 5)
+
+        camera_users_sizer.Add(self.users_sizer, 0, wx.CENTER | wx.ALL, 5)
+
+        # arrange the frame
+        self.SetSizer(camera_users_sizer)
+        self.Layout()
+        self.Hide()
 
 if __name__ == "__main__":
     frame = MainFrame()
