@@ -1,4 +1,5 @@
 import wx
+import wx.grid
 import time
 import threading
 from pubsub import pub
@@ -287,11 +288,14 @@ class ManagerPanel(wx.Panel):
         camera_label.SetForegroundColour(wx.BLACK)
         camera_label.SetFont(self.label_font)
 
-        self.camera_sizer.Add(camera_label, 0, wx.ALIGN_TOP, 5)
+        self.camera_sizer.Add(camera_label, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        
+        self.cameras_grid = wx.grid.Grid(self)
+        
+        self.camera_sizer.Add(self.cameras_grid, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
         
         camera_users_sizer.Add(self.camera_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
-        camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 2))
-
+        camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 4))
 
         # creating a vertical sizer for the users
         self.users_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -301,7 +305,11 @@ class ManagerPanel(wx.Panel):
         users_label.SetForegroundColour(wx.BLACK)
         users_label.SetFont(self.label_font)
         
-        self.users_sizer.Add(users_label, 0, wx.ALIGN_TOP, 5)
+        self.users_sizer.Add(users_label, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        
+        self.users_grid = wx.grid.Grid(self)
+
+        self.users_sizer.Add(self.users_grid, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         camera_users_sizer.Add(self.users_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
 
@@ -322,24 +330,23 @@ class ManagerPanel(wx.Panel):
         pub.sendMessage("refresh_request")
         
     def handle_users_refresh(self, users_list):
-        print(users_list)
-        for user in users_list:
-            label = wx.StaticText(self, 1, label=user[1])
-            label.SetForegroundColour(wx.BLACK)
-            label.SetFont(self.label_font)
-            
-            self.users_sizer.Add(label, 0, wx.ALIGN_TOP, 5)
+        self.users_grid.CreateGrid(len(users_list), 2)
+        self.users_grid.SetColLabelValue(0, "username")
+        self.users_grid.SetColLabelValue(1, "hashed password")
+        
+        for i in range(len(users_list)):
+            self.users_grid.SetCellValue(i, 0, users_list[i][1])
+            self.users_grid.SetCellValue(i, 1, users_list[i][2])
             
         
     def handle_cameras_refresh(self, cameras_list):
-        print(cameras_list)
-        for camera in cameras_list:
-            label = wx.StaticText(self, 1, label=camera[1])
-            label.SetForegroundColour(wx.BLACK)
-            label.SetFont(self.label_font)
-            
-            self.camera_sizer.Add(label, 0, wx.ALIGN_TOP, 5)
+        self.cameras_grid.CreateGrid(len(cameras_list), 2)
+        self.cameras_grid.SetColLabelValue(0, "camera")
+        self.cameras_grid.SetColLabelValue(1, "mac")
         
+        for i in range(len(cameras_list)):
+            self.cameras_grid.SetCellValue(i, 0, cameras_list[i][1])
+            self.cameras_grid.SetCellValue(i, 1, cameras_list[i][2])
 
 if __name__ == "__main__":
     frame = MainFrame()
