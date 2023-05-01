@@ -274,6 +274,8 @@ class ManagerPanel(wx.Panel):
         self.parent = parent
         self.SetBackgroundColour(BACKGROUND_COLOR)
 
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
         # creating a hotizontal sizer to split users and cameras
         camera_users_sizer = wx.BoxSizer(wx.HORIZONTAL)
         camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 5))
@@ -291,11 +293,14 @@ class ManagerPanel(wx.Panel):
         self.camera_sizer.Add(camera_label, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
         
         self.cameras_grid = wx.grid.Grid(self)
-        
+        self.cameras_grid.CreateGrid(0, 2)
+        self.cameras_grid.SetColLabelValue(0, "camera")
+        self.cameras_grid.SetColLabelValue(1, "mac")
+
         self.camera_sizer.Add(self.cameras_grid, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
         
         camera_users_sizer.Add(self.camera_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
-        camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 4))
+        camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 3))
 
         # creating a vertical sizer for the users
         self.users_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -308,10 +313,23 @@ class ManagerPanel(wx.Panel):
         self.users_sizer.Add(users_label, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
         
         self.users_grid = wx.grid.Grid(self)
+        self.users_grid.CreateGrid(0, 2)
+        self.users_grid.SetColLabelValue(0, "username")
+        self.users_grid.SetColLabelValue(1, "hashed password")
 
         self.users_sizer.Add(self.users_grid, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         camera_users_sizer.Add(self.users_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
+
+        sizer.Add(camera_users_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
+
+        delete_button = wx.Button(self, label="🗑", size=(200, 100))
+        delete_button.Bind(wx.EVT_BUTTON, self.on_delete)
+        delete_button.SetBackgroundColour((255, 0, 0, 200))
+        delete_button.SetForegroundColour((255, 255, 255, 200))
+        delete_button.SetFont(wx.Font(32, wx.DECORATIVE, wx.NORMAL, wx.NORMAL))
+
+        sizer.Add(delete_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         # subscribe for list refreshes        
         pub.subscribe(self.handle_users_refresh, "users_list")
@@ -319,34 +337,69 @@ class ManagerPanel(wx.Panel):
         
         self.refresh_lists()
 
-
         # arrange the frame
-        self.SetSizer(camera_users_sizer)
+        self.SetSizer(sizer)
         self.Layout()
         self.Hide()
         
-        
-    def refresh_lists(self):
-        pub.sendMessage("refresh_request")
-        
     def handle_users_refresh(self, users_list):
-        self.users_grid.CreateGrid(len(users_list), 2)
-        self.users_grid.SetColLabelValue(0, "username")
-        self.users_grid.SetColLabelValue(1, "hashed password")
-        
+        if self.users_grid.GetNumberRows():
+            self.users_grid.DeleteRows(numRows=self.users_grid.GetNumberRows())
+        self.users_grid.InsertRows(numRows=len(users_list))
+
         for i in range(len(users_list)):
+            # inserting cell values
             self.users_grid.SetCellValue(i, 0, users_list[i][1])
             self.users_grid.SetCellValue(i, 1, users_list[i][2])
-            
-        
+            # setting cells to read only
+            self.users_grid.SetReadOnly(i, 0)
+            self.users_grid.SetReadOnly(i, 1)
+
     def handle_cameras_refresh(self, cameras_list):
-        self.cameras_grid.CreateGrid(len(cameras_list), 2)
-        self.cameras_grid.SetColLabelValue(0, "camera")
-        self.cameras_grid.SetColLabelValue(1, "mac")
-        
+        if self.cameras_grid.GetNumberRows():
+            self.cameras_grid.DeleteRows(numRows=self.cameras_grid.GetNumberRows())
+        self.cameras_grid.InsertRows(numRows=len(cameras_list))
+
         for i in range(len(cameras_list)):
+            # inserting cell values
             self.cameras_grid.SetCellValue(i, 0, cameras_list[i][1])
             self.cameras_grid.SetCellValue(i, 1, cameras_list[i][2])
+            # setting cells to read only
+            self.cameras_grid.SetReadOnly(i, 0)
+            self.cameras_grid.SetReadOnly(i, 1)
+
+    def on_delete(self, event):
+        selected_rows = self.cameras_grid.GetSelectedRows()
+        if len(self.cameras_grid.GetSelectionBlockTopLeft()):
+            selected_cell_rows = range(self.cameras_grid.GetSelectionBlockTopLeft()[0][0],
+                                       self.cameras_grid.GetSelectionBlockBottomRight()[0][0]+1)
+        else:
+            selected_cell_rows = []
+
+        selected_cameras = list(set(selected_rows) | set(selected_cell_rows))
+
+        for camera_row in selected_cameras:
+            print(camera_row, self.cameras_grid.GetCellValue(camera_row, 1))
+            pub.sendMessage("delete_camera", mac=self.cameras_grid.GetCellValue(camera_row, 1))
+
+        selected_rows = self.users_grid.GetSelectedRows()
+        if len(self.users_grid.GetSelectionBlockTopLeft()):
+            selected_cell_rows = range(self.users_grid.GetSelectionBlockTopLeft()[0][0],
+                                       self.users_grid.GetSelectionBlockBottomRight()[0][0]+1)
+        else:
+            selected_cell_rows = []
+
+        selected_users = list(set(selected_rows) | set(selected_cell_rows))
+
+        for user_row in selected_users:
+            pub.sendMessage("delete_user", username=self.users_grid.GetCellValue(user_row, 0))
+
+        self.refresh_lists()
+
+    @staticmethod
+    def refresh_lists():
+        pub.sendMessage("refresh_request")
+
 
 if __name__ == "__main__":
     frame = MainFrame()
