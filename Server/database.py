@@ -1,5 +1,8 @@
 import sqlite3
 from encryption import Encryption
+from typing import List
+
+
 class Database:
 
     def __init__(self, database_name: str):
@@ -22,10 +25,11 @@ class Database:
         self.cursor.execute(create_users_table_statement)
         self.cursor.execute(create_cameras_table_statement)
 
-    def insert_user(self, username: str, password: str):
+    def insert_user(self, username: str, password: str) -> bool:
         password = Encryption.hash(password)
+        insert_user_statement = f"INSERT INTO users(username, password) VALUES ('{username}', '{password}')"
+
         try:
-            insert_user_statement = f"INSERT into users(username, password) VALUES ('{username}', '{password}')"
             self.cursor.execute(insert_user_statement)
             self.database.commit()
         except sqlite3.IntegrityError:
@@ -35,9 +39,23 @@ class Database:
 
         return success
 
-    def insert_camera(self, name: str, mac: str):
+    def delete_user(self, username: str) -> bool:
+        delete_user_statement = f"DELETE FROM users WHERE username = '{username}'"
+
         try:
-            insert_user_statement = f"INSERT into cameras(name, mac) VALUES ('{name}', '{mac}')"
+            self.cursor.execute(delete_user_statement)
+            self.database.commit()
+        except sqlite3.IntegrityError:
+            success = False
+        else:
+            success = True
+
+        return success
+
+    def insert_camera(self, name: str, mac: str) -> bool:
+        insert_user_statement = f"INSERT INTO cameras(name, mac) VALUES ('{name}', '{mac}')"
+
+        try:
             self.cursor.execute(insert_user_statement)
             self.database.commit()
         except sqlite3.IntegrityError:
@@ -47,9 +65,23 @@ class Database:
 
         return success
 
-    def update_camera(self, name: str, mac: str):
+    def delete_camera(self, mac: str) -> bool:
+        delete_camera_statement = f"DELETE FROM cameras WHERE mac = '{mac}'"
+
         try:
-            insert_user_statement = f"UPDATE users SET password = '{name}' WHERE username = '{mac}'"
+            self.cursor.execute(delete_camera_statement)
+            self.database.commit()
+        except sqlite3.IntegrityError:
+            success = False
+        else:
+            success = True
+
+        return success
+
+    def update_camera(self, name: str, mac: str) -> bool:
+        insert_user_statement = f"UPDATE users SET password = '{name}' WHERE username = '{mac}'"
+
+        try:
             self.cursor.execute(insert_user_statement)
             self.database.commit()
         except sqlite3.IntegrityError:
@@ -59,10 +91,11 @@ class Database:
 
         return success
 
-    def update_user(self, username: str, password: str):
+    def update_user(self, username: str, password: str) -> bool:
         password = Encryption.hash(password)
+        insert_user_statement = f"UPDATE users SET password = '{password}' WHERE username = '{username}'"
+
         try:
-            insert_user_statement = f"UPDATE users SET password = '{password}' WHERE username = '{username}'"
             self.cursor.execute(insert_user_statement)
             self.database.commit()
         except sqlite3.IntegrityError:
@@ -72,7 +105,7 @@ class Database:
 
         return success
 
-    def check_password(self, username: str, password: str):
+    def check_password(self, username: str, password: str) -> bool:
         password = Encryption.hash(password)
         check_login_statement = f"SELECT password FROM users WHERE username = '{username}'"
         self.cursor.execute(check_login_statement)
@@ -83,20 +116,20 @@ class Database:
 
         return result
 
-    def camera_name(self, mac: str):
+    def camera_name(self, mac: str) -> str:
         camera_exists_statement = f"SELECT name FROM cameras WHERE mac = '{mac}'"
         self.cursor.execute(camera_exists_statement)
         name = ""
         output = self.cursor.fetchone()
         if output and len(output):
             name = output[0]
-        return name
+        return nameq
 
-    def get_users(self):
+    def get_users(self) -> List[List[str]]:
         self.cursor.execute("SELECT * FROM users")
         return self.cursor.fetchall()
-    
-    def get_cameras(self):
+
+    def get_cameras(self) -> List[List[str]]:
         self.cursor.execute("SELECT * FROM cameras")
         return self.cursor.fetchall()
 
