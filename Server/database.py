@@ -123,7 +123,7 @@ class Database:
         output = self.cursor.fetchone()
         if output and len(output):
             name = output[0]
-        return nameq
+        return name
 
     def get_users(self) -> List[List[str]]:
         self.cursor.execute("SELECT * FROM users")
