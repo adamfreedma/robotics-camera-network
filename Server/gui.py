@@ -256,21 +256,36 @@ class ControlPanel(wx.Panel):
 
     def on_forwards(self, event):
         self.forwards_button.SetBackgroundColour(wx.WHITE)
+        self.left_button.SetBackgroundColour(WIDGET_COLOR)
+        self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
+        self.right_button.SetBackgroundColour(WIDGET_COLOR)
         pub.sendMessage("direction", direction="F")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
 
     def on_right(self, event):
         self.right_button.SetBackgroundColour(wx.WHITE)
+        self.left_button.SetBackgroundColour(WIDGET_COLOR)
+        self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
+        self.forwards_button.SetBackgroundColour(WIDGET_COLOR)
+
         pub.sendMessage("direction", direction="R")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
 
     def on_backwards(self, event):
         self.backwards_button.SetBackgroundColour(wx.WHITE)
+        self.left_button.SetBackgroundColour(WIDGET_COLOR)
+        self.right_button.SetBackgroundColour(WIDGET_COLOR)
+        self.forwards_button.SetBackgroundColour(WIDGET_COLOR)
+
         pub.sendMessage("direction", direction="B")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
 
     def on_left(self, event):
         self.left_button.SetBackgroundColour(wx.WHITE)
+        self.right_button.SetBackgroundColour(WIDGET_COLOR)
+        self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
+        self.forwards_button.SetBackgroundColour(WIDGET_COLOR)
+
         pub.sendMessage("direction", direction="L")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
         
