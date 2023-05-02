@@ -56,7 +56,7 @@ def handle_delete_camera(mac):
     database.delete_camera(mac)
 
 
-def handle_direction_change(direction):
+def handle_direction(direction):
     robot_conn.update_direction(direction)
 
 
@@ -94,7 +94,7 @@ def main():
 
     pub.subscribe(handle_login_request, "login_request")
     pub.subscribe(handle_refresh_request, "refresh_request")
-    pub.subscribe(handle_direction_change, "direction")
+    pub.subscribe(handle_direction, "direction")
     pub.subscribe(handle_delete_user, "delete_user")
     pub.subscribe(handle_create_user, "create_user")
     pub.subscribe(handle_edit_user, "edit_user")
