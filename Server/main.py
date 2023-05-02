@@ -60,6 +60,20 @@ def handle_direction_change(direction):
     robot_conn.update_direction(direction)
 
 
+def handle_create_user(username, password):
+    if database.insert_user(username, password):
+        pub.sendMessage("create_user_answer", answer="S")
+    else:
+        pub.sendMessage("create_user_answer", answer="F")
+
+
+def handle_create_camera(name, mac):
+    if database.insert_camera(name, mac):
+        pub.sendMessage("create_camera_answer", answer="S")
+    else:
+        pub.sendMessage("create_camera_answer", answer="F")
+
+
 def main():
     main_server_thread = threading.Thread(target=main_server, args=[], daemon=True)
     main_server_thread.start()
@@ -69,6 +83,8 @@ def main():
     pub.subscribe(handle_direction_change, "direction")
     pub.subscribe(handle_delete_camera, "delete_camera")
     pub.subscribe(handle_delete_user, "delete_user")
+    pub.subscribe(handle_create_user, "create_user")
+    pub.subscribe(handle_create_camera, "create_camera")
 
     main_frame = gui.MainFrame()
     gui.app.MainLoop()
