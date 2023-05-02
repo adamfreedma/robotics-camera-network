@@ -1,6 +1,6 @@
 import sqlite3
 from encryption import Encryption
-from typing import List
+from typing import List, Tuple, Any
 
 
 class Database:
@@ -21,7 +21,8 @@ class Database:
         create_users_table_statement = f"CREATE TABLE IF NOT EXISTS users(id integer PRIMARY KEY AUTOINCREMENT," \
             f" username text NOT NULL UNIQUE, password text)"
         create_cameras_table_statement = f"CREATE TABLE IF NOT EXISTS cameras(id integer PRIMARY KEY AUTOINCREMENT," \
-            f" name text NOT NULL UNIQUE, mac text UNIQUE)"
+            f" name text NOT NULL UNIQUE, mac text UNIQUE, x integer NOT NULL, y integer NOT NULL," \
+            f" z integer NOT NULL, yaw integer NOT NULL, pitch integer NOT NULL, roll integer NOT NULL)"
         self.cursor.execute(create_users_table_statement)
         self.cursor.execute(create_cameras_table_statement)
 
@@ -52,8 +53,9 @@ class Database:
 
         return success
 
-    def insert_camera(self, name: str, mac: str) -> bool:
-        insert_user_statement = f"INSERT INTO cameras(name, mac) VALUES ('{name}', '{mac}')"
+    def insert_camera(self, name: str, mac: str, x: int, y: int, z: int, yaw: int, pitch: int, roll: int) -> bool:
+        insert_user_statement = f"INSERT INTO cameras(name, mac, x, y, z, yaw, pitch, roll) VALUES ('{name}', '{mac}'," \
+            f" '{x}', '{y}', '{z}', '{yaw}', '{pitch}', '{roll}')"
 
         try:
             self.cursor.execute(insert_user_statement)
@@ -78,11 +80,13 @@ class Database:
 
         return success
 
-    def update_camera(self, name: str, mac: str) -> bool:
-        insert_user_statement = f"UPDATE users SET password = '{name}' WHERE username = '{mac}'"
+    def update_camera(self, name: str, mac: str, x: int, y: int, z: int, yaw: int, pitch: int, roll: int) -> bool:
+        print(name, mac, x, y, z, yaw, pitch, roll)
+        update_camera_statement = f"UPDATE cameras SET name = '{name}', x = '{x}', y = '{y}', z = '{z}'," \
+            f" yaw = '{yaw}', pitch = '{pitch}', roll = '{roll}' WHERE mac = '{mac}'"
 
         try:
-            self.cursor.execute(insert_user_statement)
+            self.cursor.execute(update_camera_statement)
             self.database.commit()
         except sqlite3.IntegrityError:
             success = False
@@ -92,11 +96,12 @@ class Database:
         return success
 
     def update_user(self, username: str, password: str) -> bool:
+        print(username, password)
         password = Encryption.hash(password)
-        insert_user_statement = f"UPDATE users SET password = '{password}' WHERE username = '{username}'"
+        update_user_statement = f"UPDATE users SET password = '{password}' WHERE username = '{username}'"
 
         try:
-            self.cursor.execute(insert_user_statement)
+            self.cursor.execute(update_user_statement)
             self.database.commit()
         except sqlite3.IntegrityError:
             success = False
@@ -116,14 +121,21 @@ class Database:
 
         return result
 
-    def camera_name(self, mac: str) -> str:
-        camera_exists_statement = f"SELECT name FROM cameras WHERE mac = '{mac}'"
-        self.cursor.execute(camera_exists_statement)
+    def camera_info(self, mac: str) -> Tuple[str, List[Any]]:
+        camera_name_statement = f"SELECT name FROM cameras WHERE mac = '{mac}'"
+        self.cursor.execute(camera_name_statement)
+
         name = ""
         output = self.cursor.fetchone()
         if output and len(output):
             name = output[0]
-        return name
+
+        camera_location_statement = f"SELECT x, y, z, yaw, pitch, roll FROM cameras WHERE mac = '{mac}'"
+        self.cursor.execute(camera_location_statement)
+
+        location = self.cursor.fetchone()
+
+        return name, location
 
     def get_users(self) -> List[List[str]]:
         self.cursor.execute("SELECT * FROM users")
@@ -136,7 +148,8 @@ class Database:
 
 if __name__ == '__main__':
     database = Database("robotics.db")
-    database.insert_camera("cam1", "ff:ff:ff:ff:ff:ff")
+    database.insert_camera("cam1", "ff:ff:ff:ff:ff:ff", 0, 0, 2, 0, 0, 0)
+    database.insert_camera("cam2", "2f:ff:ff:ff:ff:ff", 0, 0, 1, 0, 0, 0)
     if not database.insert_user("adam", "123"):
         print("username already exists")
     print(database.check_password("adam", "123"))

@@ -67,11 +67,25 @@ def handle_create_user(username, password):
         pub.sendMessage("create_user_answer", answer="F")
 
 
-def handle_create_camera(name, mac):
-    if database.insert_camera(name, mac):
+def handle_edit_user(username, password):
+    if database.update_user(username, password):
+        pub.sendMessage("edit_user_answer", answer="S")
+    else:
+        pub.sendMessage("edit_user_answer", answer="F")
+
+
+def handle_create_camera(name, mac, x, y, z, yaw, pitch, roll):
+    if database.insert_camera(name, mac, x, y, z, yaw, pitch, roll):
         pub.sendMessage("create_camera_answer", answer="S")
     else:
         pub.sendMessage("create_camera_answer", answer="F")
+
+
+def handle_edit_camera(name, mac, x, y, z, yaw, pitch, roll):
+    if database.update_camera(name, mac, x, y, z, yaw, pitch, roll):
+        pub.sendMessage("edit_camera_answer", answer="S")
+    else:
+        pub.sendMessage("edit_camera_answer", answer="F")
 
 
 def main():
@@ -81,10 +95,12 @@ def main():
     pub.subscribe(handle_login_request, "login_request")
     pub.subscribe(handle_refresh_request, "refresh_request")
     pub.subscribe(handle_direction_change, "direction")
-    pub.subscribe(handle_delete_camera, "delete_camera")
     pub.subscribe(handle_delete_user, "delete_user")
     pub.subscribe(handle_create_user, "create_user")
+    pub.subscribe(handle_edit_user, "edit_user")
+    pub.subscribe(handle_delete_camera, "delete_camera")
     pub.subscribe(handle_create_camera, "create_camera")
+    pub.subscribe(handle_edit_camera, "edit_camera")
 
     main_frame = gui.MainFrame()
     gui.app.MainLoop()

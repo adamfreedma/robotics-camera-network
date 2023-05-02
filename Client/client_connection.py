@@ -25,8 +25,8 @@ class Connection(object):
         self.server_socket.connect((self.server_ip, self.server_port))
         # checking if the server approves us
         self.accepted = False
-        self.wait_for_ack_thread = threading.Thread(target=self._wait_for_ack, daemon=True)
-        self.wait_for_ack_thread.start()
+        self.location = []
+        self._wait_for_ack()
         self.encryptor = encryption.Encryption(self.server_socket)
 
     def _wait_for_ack(self):
@@ -41,6 +41,26 @@ class Connection(object):
             print("Connection interrupted whilst waiting for ack")
 
         if answer == "ack":
+
+            positions = []
+            angles = []
+            for i in range(3):
+                try:
+                    axis = self.server_socket.recv(10).decode()
+                    axis = float(axis)
+                    positions.append(axis)
+                except (socket.error, TypeError):
+                    print("Connection interrupted whilst waiting for ack location")
+
+            for i in range(3):
+                try:
+                    axis = self.server_socket.recv(10).decode()
+                    axis = float(axis)
+                    angles.append(axis)
+                except (socket.error, TypeError):
+                    print("Connection interrupted whilst waiting for ack location")
+
+            self.location = (positions, angles)
             self.accepted = True
             print("accepted by the server")
         else:

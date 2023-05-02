@@ -292,7 +292,6 @@ class ManagerPanel(wx.Panel):
 
         # creating a vertical sizer for the cameras
         self.cameras_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.cameras_sizer.AddSpacer(int(SCREEN_HEIGHT / 8))
 
         camera_label = wx.StaticText(self, -1, label="camera list:")
         camera_label.SetForegroundColour(wx.BLACK)
@@ -300,10 +299,16 @@ class ManagerPanel(wx.Panel):
 
         self.cameras_sizer.Add(camera_label, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
         
-        self.cameras_grid = wx.grid.Grid(self, size=(250, int(SCREEN_HEIGHT / 3)))
-        self.cameras_grid.CreateGrid(0, 2)
+        self.cameras_grid = wx.grid.Grid(self, size=(400, int(SCREEN_HEIGHT / 4)))
+        self.cameras_grid.CreateGrid(0, 8)
         self.cameras_grid.SetColLabelValue(0, "camera")
         self.cameras_grid.SetColLabelValue(1, "mac")
+        self.cameras_grid.SetColLabelValue(2, "x")
+        self.cameras_grid.SetColLabelValue(3, "y")
+        self.cameras_grid.SetColLabelValue(4, "z")
+        self.cameras_grid.SetColLabelValue(5, "yaw")
+        self.cameras_grid.SetColLabelValue(6, "pitch")
+        self.cameras_grid.SetColLabelValue(7, "roll")
 
         self.cameras_sizer.Add(self.cameras_grid, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
@@ -314,8 +319,10 @@ class ManagerPanel(wx.Panel):
         name_label.SetFont(self.label_font)
         self.name_input = wx.TextCtrl(self, -1, name="name", size=(200, -1))
 
-        self.cameras_sizer.Add(name_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
-        self.cameras_sizer.Add(self.name_input, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        name_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        name_sizer.Add(name_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        name_sizer.Add(self.name_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(name_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         # adding password input
         mac_label = wx.StaticText(self, 1, label="Mac:")
@@ -323,8 +330,76 @@ class ManagerPanel(wx.Panel):
         mac_label.SetFont(self.label_font)
         self.mac_input = wx.TextCtrl(self, -1, name="mac", size=(200, -1))
 
-        self.cameras_sizer.Add(mac_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
-        self.cameras_sizer.Add(self.mac_input, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        mac_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        mac_sizer.Add(mac_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        mac_sizer.Add(self.mac_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(mac_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        # adding x input
+        x_label = wx.StaticText(self, 1, label="x:")
+        x_label.SetForegroundColour(wx.BLACK)
+        x_label.SetFont(self.label_font)
+        self.x_input = wx.TextCtrl(self, -1, name="x", size=(200, -1))
+
+        x_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        x_sizer.Add(x_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        x_sizer.Add(self.x_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(x_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        # adding y input
+        y_label = wx.StaticText(self, 1, label="y:")
+        y_label.SetForegroundColour(wx.BLACK)
+        y_label.SetFont(self.label_font)
+        self.y_input = wx.TextCtrl(self, -1, name="y", size=(200, -1))
+
+        y_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        y_sizer.Add(y_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        y_sizer.Add(self.y_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(y_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        # adding z input
+        z_label = wx.StaticText(self, 1, label="z:")
+        z_label.SetForegroundColour(wx.BLACK)
+        z_label.SetFont(self.label_font)
+        self.z_input = wx.TextCtrl(self, -1, name="z", size=(200, -1))
+
+        z_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        z_sizer.Add(z_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        z_sizer.Add(self.z_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(z_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        # adding yaw input
+        yaw_label = wx.StaticText(self, 1, label="yaw:")
+        yaw_label.SetForegroundColour(wx.BLACK)
+        yaw_label.SetFont(self.label_font)
+        self.yaw_input = wx.TextCtrl(self, -1, name="yaw", size=(200, -1))
+
+        yaw_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        yaw_sizer.Add(yaw_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        yaw_sizer.Add(self.yaw_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(yaw_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        # adding pitch input
+        pitch_label = wx.StaticText(self, 1, label="pitch:")
+        pitch_label.SetForegroundColour(wx.BLACK)
+        pitch_label.SetFont(self.label_font)
+        self.pitch_input = wx.TextCtrl(self, -1, name="pitch", size=(200, -1))
+
+        pitch_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        pitch_sizer.Add(pitch_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        pitch_sizer.Add(self.pitch_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(pitch_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        # adding roll input
+        roll_label = wx.StaticText(self, 1, label="roll:")
+        roll_label.SetForegroundColour(wx.BLACK)
+        roll_label.SetFont(self.label_font)
+        self.roll_input = wx.TextCtrl(self, -1, name="roll", size=(200, -1))
+
+        roll_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        roll_sizer.Add(roll_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        roll_sizer.Add(self.roll_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.cameras_sizer.Add(roll_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         # creating the confirm button
         create_camera_button = wx.Button(self, label="+", size=(200, 100))
@@ -333,15 +408,24 @@ class ManagerPanel(wx.Panel):
         create_camera_button.SetBackgroundColour((0, 255, 0, 200))
         create_camera_button.SetFont(self.button_font)
 
-        self.cameras_sizer.Add(create_camera_button, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        edit_camera_button = wx.Button(self, label="✎", size=(200, 100))
+        edit_camera_button.Bind(wx.EVT_BUTTON, self.on_edit_camera)
+        edit_camera_button.SetForegroundColour((255, 255, 255, 200))
+        edit_camera_button.SetBackgroundColour((0, 0, 255, 200))
+        edit_camera_button.SetFont(self.button_font)
+
+        camera_buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        camera_buttons_sizer.Add(create_camera_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        camera_buttons_sizer.Add(edit_camera_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        self.cameras_sizer.Add(camera_buttons_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         camera_users_sizer.Add(self.cameras_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
         camera_users_sizer.AddSpacer(int(SCREEN_WIDTH / 3))
 
         # creating a vertical sizer for the users
         self.users_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.users_sizer.AddSpacer(int(SCREEN_HEIGHT / 8))
-        
+
         users_label = wx.StaticText(self, 1, label="users list:")
         users_label.SetForegroundColour(wx.BLACK)
         users_label.SetFont(self.label_font)
@@ -349,7 +433,7 @@ class ManagerPanel(wx.Panel):
         self.users_sizer.Add(users_label, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         # creating users grid
-        self.users_grid = wx.grid.Grid(self, size=(250, int(SCREEN_HEIGHT / 3)))
+        self.users_grid = wx.grid.Grid(self, size=(250, int(SCREEN_HEIGHT / 4)))
         self.users_grid.CreateGrid(0, 2)
         self.users_grid.SetColLabelValue(0, "username")
         self.users_grid.SetColLabelValue(1, "hashed password")
@@ -358,13 +442,15 @@ class ManagerPanel(wx.Panel):
 
         # creating a create user form
         # adding username input
-        user_label = wx.StaticText(self, -1, label="Username:")
-        user_label.SetForegroundColour(wx.BLACK)
-        user_label.SetFont(self.label_font)
+        username_label = wx.StaticText(self, -1, label="Username:")
+        username_label.SetForegroundColour(wx.BLACK)
+        username_label.SetFont(self.label_font)
         self.username_input = wx.TextCtrl(self, -1, name="username", size=(200, -1))
 
-        self.users_sizer.Add(user_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
-        self.users_sizer.Add(self.username_input, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        username_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        username_sizer.Add(username_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        username_sizer.Add(self.username_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.users_sizer.Add(username_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         # adding password input
         password_label = wx.StaticText(self, 1, label="Password:")
@@ -372,17 +458,29 @@ class ManagerPanel(wx.Panel):
         password_label.SetFont(self.label_font)
         self.password_input = wx.TextCtrl(self, -1, name="password", size=(200, -1))
 
-        self.users_sizer.Add(password_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
-        self.users_sizer.Add(self.password_input, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        password_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        password_sizer.Add(password_label, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        password_sizer.Add(self.password_input, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        self.users_sizer.Add(password_sizer, 0,  wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
-        # creating the confirm button
-        create_user_button = wx.Button(self, label="+", size=(200, 100))
+        # creating the create and edit buttons
+        create_user_button = wx.Button(self, label="+", size=(100, 100))
         create_user_button.Bind(wx.EVT_BUTTON, self.on_create_user)
         create_user_button.SetForegroundColour((255, 255, 255, 200))
         create_user_button.SetBackgroundColour((0, 255, 0, 200))
         create_user_button.SetFont(self.button_font)
 
-        self.users_sizer.Add(create_user_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        edit_user_button = wx.Button(self, label="✎", size=(200, 100))
+        edit_user_button.Bind(wx.EVT_BUTTON, self.on_edit_user)
+        edit_user_button.SetForegroundColour((255, 255, 255, 200))
+        edit_user_button.SetBackgroundColour((0, 0, 255, 200))
+        edit_user_button.SetFont(self.button_font)
+
+        user_buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        user_buttons_sizer.Add(create_user_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+        user_buttons_sizer.Add(edit_user_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
+
+        self.users_sizer.Add(user_buttons_sizer, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
 
         camera_users_sizer.Add(self.users_sizer, 0, wx.ALIGN_TOP | wx.ALL, 5)
 
@@ -402,6 +500,9 @@ class ManagerPanel(wx.Panel):
         # subscribe for creation answers
         pub.subscribe(self.handle_create_user_answer, "create_user_answer")
         pub.subscribe(self.handle_create_camera_answer, "create_camera_answer")
+        # subscribe for edit answers
+        pub.subscribe(self.handle_edit_user_answer, "edit_user_answer")
+        pub.subscribe(self.handle_edit_camera_answer, "edit_camera_answer")
         
         self.refresh_lists()
 
@@ -450,11 +551,46 @@ class ManagerPanel(wx.Panel):
         self.name_input.Clear()
         mac = self.mac_input.GetValue()
         self.mac_input.Clear()
+        x = self.x_input.GetValue()
+        self.x_input.Clear()
+        y = self.y_input.GetValue()
+        self.y_input.Clear()
+        z = self.z_input.GetValue()
+        self.z_input.Clear()
+        yaw = self.yaw_input.GetValue()
+        self.yaw_input.Clear()
+        pitch = self.pitch_input.GetValue()
+        self.pitch_input.Clear()
+        roll = self.roll_input.GetValue()
+        self.roll_input.Clear()
 
         if name and mac:
-            pub.sendMessage("create_camera", name=name, mac=mac)
+            pub.sendMessage("create_camera", name=name, mac=mac, x=x, y=y, z=z, yaw=yaw, pitch=pitch, roll=roll)
         else:
-            self.frame.SetStatusText("please fill both name and mac fields!")
+            self.frame.SetStatusText("please fill all fields!")
+
+    def on_edit_camera(self, event):
+        name = self.name_input.GetValue()
+        self.name_input.Clear()
+        mac = self.mac_input.GetValue()
+        self.mac_input.Clear()
+        x = self.x_input.GetValue()
+        self.x_input.Clear()
+        y = self.y_input.GetValue()
+        self.y_input.Clear()
+        z = self.z_input.GetValue()
+        self.z_input.Clear()
+        yaw = self.yaw_input.GetValue()
+        self.yaw_input.Clear()
+        pitch = self.pitch_input.GetValue()
+        self.pitch_input.Clear()
+        roll = self.roll_input.GetValue()
+        self.roll_input.Clear()
+
+        if name and mac:
+            pub.sendMessage("edit_camera", name=name, mac=mac, x=x, y=y, z=z, yaw=yaw, pitch=pitch, roll=roll)
+        else:
+            self.frame.SetStatusText("please fill all fields!")
 
     def on_create_user(self, event):
         username = self.username_input.GetValue()
@@ -467,31 +603,44 @@ class ManagerPanel(wx.Panel):
         else:
             self.frame.SetStatusText("please fill both username and password fields!")
 
+    def on_edit_user(self, event):
+        username = self.username_input.GetValue()
+        self.username_input.Clear()
+        password = self.password_input.GetValue()
+        self.password_input.Clear()
+
+        if username and password:
+            pub.sendMessage("edit_user", username=username, password=password)
+        else:
+            self.frame.SetStatusText("please fill both username and password fields!")
+
     def handle_cameras_refresh(self, cameras_list):
         if self.cameras_grid.GetNumberRows():
             self.cameras_grid.DeleteRows(numRows=self.cameras_grid.GetNumberRows())
         self.cameras_grid.InsertRows(numRows=len(cameras_list))
 
+        grid_width = 8
+
         for i in range(len(cameras_list)):
-            # inserting cell values
-            self.cameras_grid.SetCellValue(i, 0, cameras_list[i][1])
-            self.cameras_grid.SetCellValue(i, 1, cameras_list[i][2])
-            # setting cells to read only
-            self.cameras_grid.SetReadOnly(i, 0)
-            self.cameras_grid.SetReadOnly(i, 1)
+            for j in range(grid_width):
+                # inserting cell value
+                self.cameras_grid.SetCellValue(i, j, str(cameras_list[i][j+1]))
+                # setting cell to read only
+                self.cameras_grid.SetReadOnly(i, j)
 
     def handle_users_refresh(self, users_list):
         if self.users_grid.GetNumberRows():
             self.users_grid.DeleteRows(numRows=self.users_grid.GetNumberRows())
         self.users_grid.InsertRows(numRows=len(users_list))
 
+        grid_width = 2
+
         for i in range(len(users_list)):
-            # inserting cell values
-            self.users_grid.SetCellValue(i, 0, users_list[i][1])
-            self.users_grid.SetCellValue(i, 1, users_list[i][2])
-            # setting cells to read only
-            self.users_grid.SetReadOnly(i, 0)
-            self.users_grid.SetReadOnly(i, 1)
+            for j in range(grid_width):
+                # inserting cell value
+                self.users_grid.SetCellValue(i, j, str(users_list[i][j+1]))
+                # setting cell to read only
+                self.users_grid.SetReadOnly(i, j)
 
     def handle_create_user_answer(self, answer):
 
@@ -506,6 +655,20 @@ class ManagerPanel(wx.Panel):
             self.refresh_lists()
         else:
             self.frame.SetStatusText("mac or name already exists, try another one")
+
+    def handle_edit_user_answer(self, answer):
+
+        if answer == "S":
+            self.refresh_lists()
+        else:
+            self.frame.SetStatusText("username dose not exists, try another one")
+
+    def handle_edit_camera_answer(self, answer):
+
+        if answer == "S":
+            self.refresh_lists()
+        else:
+            self.frame.SetStatusText("mac does not exist, try another one")
 
     @staticmethod
     def refresh_lists():

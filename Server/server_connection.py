@@ -95,16 +95,22 @@ class Connection(object):
                 if curr_socket is self.server_socket:
                     (new_client, address) = self.server_socket.accept()
                     print(self._get_mac(address[0]))
-                    name = self.database.camera_name(self._get_mac(address[0]))
+                    name, location = self.database.camera_info(self._get_mac(address[0]))
                     if name:
                         # sending accept message to the client since it is approved in the database
                         new_client.send("ack".encode())
+                        for axis in location:
+                            new_client.send(str(axis).zfill(10).encode())
                         print(f'{address[0]}, {name},  connected to the server')
                         self.encryptors[new_client] = encryption.Encryption(new_client)
                         self.open_client_sockets[new_client] = address[0]
                     else:
-                        new_client.send("rej".encode())
-                        new_client.close()
+                        try:
+                            new_client.send("rej".encode())
+                            new_client.close()
+                        except Exception as e:
+                            print(str(e))
+                            print("from sending rej")
                 elif self.encryptors[curr_socket].exchange_done:
                     input_data = ""
                     try:

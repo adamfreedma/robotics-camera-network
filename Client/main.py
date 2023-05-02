@@ -3,8 +3,11 @@ import camera
 import time
 import detector
 
-connection = client_connection.Connection("127.0.0.1", 3333)
-detector = detector.Detector("detector.weights", "detector.cfg", True, ((0, 0, 1.5), (0, 30, 0)), 0)
+connection = client_connection.Connection("192.168.4.91", 3333)
+while not connection.accepted:
+    time.sleep(0.05)
+print(connection.location)
+detector = detector.Detector("detector.weights", "detector.cfg", True, connection.location, 0)
 
 objects = []
 while True:
