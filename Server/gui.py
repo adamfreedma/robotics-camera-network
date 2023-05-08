@@ -242,7 +242,7 @@ class ControlPanel(wx.Panel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.stop)
 
-        # creating manager frame button
+        # creating a manager frame button
         manager_button = wx.Button(self, -1, "Manager", size=DIRECTION_BUTTON_SIZE)
         manager_button.Bind(wx.EVT_BUTTON, self.on_manager)
 
@@ -250,6 +250,16 @@ class ControlPanel(wx.Panel):
         manager_button.SetForegroundColour(wx.WHITE)
 
         controls_sizer.Add(manager_button, 0, wx.ALIGN_CENTER)
+
+        # creating an exit button
+        exit_button = wx.Button(self, -1, "X", size=DIRECTION_BUTTON_SIZE)
+        exit_button.Bind(wx.EVT_BUTTON, self.on_exit)
+
+        exit_button.SetBackgroundColour(wx.RED)
+        exit_button.SetForegroundColour(wx.WHITE)
+
+        controls_sizer.AddSpacer(int(SCREEN_HEIGHT / 8))
+        controls_sizer.Add(exit_button, 0, wx.ALIGN_CENTER)
 
         # setting the field painter
         self.paint_field()
@@ -324,14 +334,22 @@ class ControlPanel(wx.Panel):
         self.Hide()
         self.parent.manager.Show()
 
+    def on_exit(self, _):
+        """
+        exit the application
+        """
+        wx.Window.Close(self.parent)
+        exit()
+
     def paint_field(self):
         """paints the field on the frame"""
-        self.dc = wx.ClientDC(self)
-        self.dc.SetPen(wx.Pen("grey", style=wx.TRANSPARENT))
-        self.dc.SetBrush(wx.Brush("grey", wx.SOLID))
-        # set x, y, w, h for rectangle
-        self.dc.DrawRectangle(self.FIELD_START_X, self.FIELD_START_Y, self.FIELD_END_X - self.FIELD_START_X,
-                              self.FIELD_END_Y - self.FIELD_START_Y)
+        if self:
+            self.dc = wx.ClientDC(self)
+            self.dc.SetPen(wx.Pen("grey", style=wx.TRANSPARENT))
+            self.dc.SetBrush(wx.Brush("grey", wx.SOLID))
+            # set x, y, w, h for rectangle
+            self.dc.DrawRectangle(self.FIELD_START_X, self.FIELD_START_Y, self.FIELD_END_X - self.FIELD_START_X,
+                                  self.FIELD_END_Y - self.FIELD_START_Y)
 
     def paint_cones(self, cones: List[List[float]]):
         """
@@ -376,8 +394,8 @@ class ManagerPanel(wx.Panel):
         # creating a back button
         back_button = wx.Button(self, label="⤺", size=(160, 80))
         back_button.Bind(wx.EVT_BUTTON, self.on_back)
-        back_button.SetBackgroundColour((255, 0, 0, 200))
-        back_button.SetForegroundColour((255, 255, 255, 200))
+        back_button.SetBackgroundColour(wx.RED)
+        back_button.SetForegroundColour(wx.WHITE)
         back_button.SetFont(BUTTON_FONT)
 
         sizer.Add(back_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
@@ -492,14 +510,14 @@ class ManagerPanel(wx.Panel):
         # creating the confirm button
         create_camera_button = wx.Button(self, label="+", size=(100, 100))
         create_camera_button.Bind(wx.EVT_BUTTON, self.on_create_camera)
-        create_camera_button.SetForegroundColour((255, 255, 255, 200))
-        create_camera_button.SetBackgroundColour((0, 255, 0, 200))
+        create_camera_button.SetForegroundColour(wx.WHITE)
+        create_camera_button.SetBackgroundColour(wx.GREEN)
         create_camera_button.SetFont(BUTTON_FONT)
 
         edit_camera_button = wx.Button(self, label="✎", size=(100, 100))
         edit_camera_button.Bind(wx.EVT_BUTTON, self.on_edit_camera)
-        edit_camera_button.SetForegroundColour((255, 255, 255, 200))
-        edit_camera_button.SetBackgroundColour((0, 0, 255, 200))
+        edit_camera_button.SetForegroundColour(wx.WHITE)
+        edit_camera_button.SetBackgroundColour(wx.BLUE)
         edit_camera_button.SetFont(BUTTON_FONT)
 
         camera_buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -552,14 +570,14 @@ class ManagerPanel(wx.Panel):
         # creating the create and edit buttons
         create_user_button = wx.Button(self, label="+", size=(100, 100))
         create_user_button.Bind(wx.EVT_BUTTON, self.on_create_user)
-        create_user_button.SetForegroundColour((255, 255, 255, 200))
-        create_user_button.SetBackgroundColour((0, 255, 0, 200))
+        create_user_button.SetForegroundColour(wx.WHITE)
+        create_user_button.SetBackgroundColour(wx.GREEN)
         create_user_button.SetFont(BUTTON_FONT)
 
         edit_user_button = wx.Button(self, label="✎", size=(100, 100))
         edit_user_button.Bind(wx.EVT_BUTTON, self.on_edit_user)
-        edit_user_button.SetForegroundColour((255, 255, 255, 200))
-        edit_user_button.SetBackgroundColour((0, 0, 255, 200))
+        edit_user_button.SetForegroundColour(wx.WHITE)
+        edit_user_button.SetBackgroundColour(wx.BLUE)
         edit_user_button.SetFont(BUTTON_FONT)
 
         user_buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -574,8 +592,8 @@ class ManagerPanel(wx.Panel):
 
         delete_button = wx.Button(self, label="🗑", size=(200, 100))
         delete_button.Bind(wx.EVT_BUTTON, self.on_delete)
-        delete_button.SetBackgroundColour((255, 0, 0, 200))
-        delete_button.SetForegroundColour((255, 255, 255, 200))
+        delete_button.SetBackgroundColour(wx.RED)
+        delete_button.SetForegroundColour(wx.WHITE)
         delete_button.SetFont(BUTTON_FONT)
 
         sizer.Add(delete_button, 0, wx.ALIGN_TOP | wx.ALIGN_CENTER, 5)
