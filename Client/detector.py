@@ -16,8 +16,8 @@ class Detector:
     FRAME_WIDTH = 640
     FRAME_HEIGHT = 480
 
-    def __init__(self, weights: str, config: str, show: bool, location: Tuple[Tuple[float, float, float],
-                                                                             Tuple[float, float, float]], path=0, fov=60):
+    def __init__(self, weights: str, config: str, show: bool,
+                 location: Tuple[Tuple[float, float, float], Tuple[float, float, float]], path=0, fov=60):
         """
         :param weights: path the the .weights file of the DNN
         :param config: path the the .cfg file of the DNN
@@ -57,11 +57,12 @@ class Detector:
         """
         project's theta between 2 planes
         :param theta: the angle to project
-        :param angle_between_planes: the angle between the planes to project with (positive to decrease theta, negative to increase)
+        :param angle_between_planes: the angle between the planes to project with
+         (positive to decrease theta, negative to increase)
         :return: the projected angle
         """
         if angle_between_planes >= 0:
-            return math.atan(math.tan(theta)/ math.cos(angle_between_planes))
+            return math.atan(math.tan(theta) / math.cos(angle_between_planes))
         if angle_between_planes < 0:
             return math.atan(math.tan(theta) / math.cos(angle_between_planes))
 
@@ -115,9 +116,9 @@ class Detector:
                 self.locations_queue.put(locations)
 
     def detect(self):
-        """detecets objects in the given frame
-
-            puts list(tuple(int, int, int, int, int)): (class id, left, top, width, height) into results queue
+        """
+        detects objects in the given frame
+        puts list(tuple(int, int, int, int, int)): (class id, left, top, width, height) into results queue
         """
 
         while True:
@@ -126,7 +127,8 @@ class Detector:
 
             frame = self.camera.frames_queue.get()
 
-            classes, confidences, boxes = self.net.detect(frame, confThreshold=self.CONFIG_THRESHOLD, nmsThreshold=self.NMS_THRESHOLD)
+            classes, confidences, boxes = self.net.detect(frame, confThreshold=self.CONFIG_THRESHOLD,
+                                                          nmsThreshold=self.NMS_THRESHOLD)
 
             results = []
 
@@ -137,7 +139,7 @@ class Detector:
                         left, top, width, height = box
                         results.append((classID, left, top, width, height))
 
-                # showing the results in a seperate window
+                # showing the results in a separate window
                 if self.show:
                     for classID, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
                         if confidence > 0.5:
@@ -146,9 +148,10 @@ class Detector:
                             label_size, baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
                             left, top, width, height = box
                             top = max(top, label_size[1])
-                            cv2.rectangle(frame, box, color=(0,255,0), thickness=3)
-                            cv2.rectangle(frame, (left, top - label_size[1]), (left + label_size[0], top + baseline), (255,255,255), cv2.FILLED)
-                            cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0))
+                            cv2.rectangle(frame, box, color=(0, 255, 0), thickness=3)
+                            cv2.rectangle(frame, (left, top - label_size[1]), (left + label_size[0], top + baseline),
+                                          (255, 255, 255), cv2.FILLED)
+                            cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
             if self.show:
                 cv2.imshow("show", frame)
 

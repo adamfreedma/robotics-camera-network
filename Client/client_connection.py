@@ -1,7 +1,6 @@
 import socket
-import threading
 from typing import Union, List, Any
-import encryption as encryption
+import encryption
 import numpy
 
 
@@ -27,7 +26,7 @@ class Connection(object):
         self.accepted = False
         self.location = []
         self._wait_for_ack()
-        self.encryptor = encryption.Encryption(self.server_socket)
+        self.encryptor: encryption.Encryption = encryption.Encryption(self.server_socket)
 
     def _wait_for_ack(self):
         """

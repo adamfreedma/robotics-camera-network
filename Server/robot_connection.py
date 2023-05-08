@@ -16,6 +16,9 @@ class RobotConnection:
         self._connect()
 
     def _connect(self):
+        """
+        conencts to the robot using networktables
+        """
         self.nt_instance.startClientTeam(self.TEAM_NUMBER)
         self.nt_instance.startDSClient()
 
@@ -26,11 +29,24 @@ class RobotConnection:
 
     @staticmethod
     def _update(data: Any, entry: networktables.NetworkTableEntry):
+        """
+        updates a value
+        :param data: data to set
+        :param entry: which entry to set
+        """
         entry.setValue(data)
 
     def update_cone(self, cone: Tuple[float, float]):
+        """
+        updates cones data
+        :param cone: the cone location
+        """
         self._update(cone[0], self.cone_position_x_entry)
         self._update(cone[1], self.cone_position_y_entry)
 
     def update_direction(self, direction: str):
+        """
+        updates moving direction
+        :param direction: the direction to move
+        """
         self._update(direction, self.direction_entry)

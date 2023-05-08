@@ -24,7 +24,7 @@ class Encryption(object):
 
     def _exchange(self, connection: socket.socket):
         """
-        Diffie Hellman key exhange with the client
+        Diffie Hellman key exchange with the client
         :param connection: socket of the client to exchange with
         :return: exchanges secret ket with the client using the Diffie Hellman method
         """
@@ -70,7 +70,7 @@ class Encryption(object):
         """
         decrypts an encrypted string
         :param encrypted_string: the encrypted string
-        :return: the decrypted stirng
+        :return: the decrypted string
         """
         encrypted_string = base64.b64decode(encrypted_string)
         starting_vector = encrypted_string[:self.BLOCK_SIZE]
@@ -90,7 +90,6 @@ class Encryption(object):
     @staticmethod
     def hash(string: str):
         return hashlib.sha256(string.encode()).hexdigest()
-
 
     @staticmethod
     def _unpad(string: bytes) -> bytes:
@@ -133,7 +132,7 @@ class Encryption(object):
         """
         calculates modulo power in O(log(n)) time complexity where n=power
         :param base: the base of the power
-        :param power: the exponent of the poewr
+        :param power: the exponent of the power
         :param modulo: the modulo to use
         :return: the result of the exponent
         """

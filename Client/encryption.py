@@ -21,7 +21,11 @@ class Encryption(object):
         self.finished_exchange = False
 
     def exchange(self, connection: socket.socket):
-
+        """
+        Diffie Hellman key exchange with the server
+        :param connection: socket of the server to exchange with
+        :return: exchanges secret ket with the client using the Diffie Hellman method
+        """
         keys = ""
         try:
             keys = connection.recv(200).decode()
@@ -55,18 +59,28 @@ class Encryption(object):
         self.finished_exchange = True
 
     def encrypt(self, string):
+        """
+        encrypts a string
+        :param string: string to encrypt
+        :return: the encrypted string
+        """
         string = self._pad(string)
         starting_vector = Random.new().read(self.BLOCK_SIZE)
         cipher = AES.new(self.secret_key, AES.MODE_CBC, starting_vector)
         return base64.b64encode(starting_vector + cipher.encrypt(string.encode()))
 
     def decrypt(self, encrypted_string):
+        """
+        decrypts an encrypted string
+        :param encrypted_string: the encrypted string
+        :return: the decrypted string
+        """
         encrypted_string = base64.b64decode(encrypted_string)
         starting_vector = encrypted_string[:self.BLOCK_SIZE]
         cipher = AES.new(self.secret_key, AES.MODE_CBC, starting_vector)
         return self._unpad(cipher.decrypt(encrypted_string[self.BLOCK_SIZE:])).decode()
 
-    def _pad(self, string):
+    def _pad(self, string: str) -> str:
         """
         pads the string if it isn't a multiple of block size for encryption
         :param self:
@@ -77,11 +91,22 @@ class Encryption(object):
                                                                                 % self.BLOCK_SIZE)
 
     @staticmethod
-    def _unpad(string):
+    def _unpad(string: bytes) -> bytes:
+        """
+        unpads the string
+        :param string: string to unpad
+        """
         return string[:-ord(string[len(string) - 1:])]
 
     @staticmethod
     def _mod_power(base, power, modulo):
+        """
+        calculates modulo power in O(log(n)) time complexity where n=power
+        :param base: the base of the power
+        :param power: the exponent of the power
+        :param modulo: the modulo to use
+        :return: the result of the exponent
+        """
         if power == 0:
             return 1
         n = Encryption._mod_power(base, power // 2, modulo) % modulo

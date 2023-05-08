@@ -11,7 +11,7 @@ class Connection(object):
 
     MAX_QUEUE_SIZE = 1
 
-    def __init__(self, server_port, client_count=3):
+    def __init__(self, server_port: int, client_count=3):
         self.server_port = server_port
 
         self.server_socket = socket.socket()
@@ -72,11 +72,21 @@ class Connection(object):
                     messages = messages_to_send_cleared
 
     @staticmethod
-    def _get_mac(ip_address):
+    def _get_mac(ip_address: str) -> str:
+        """
+        gets the mac address by the ip address
+        :param ip_address: ip address to check
+        :return: the mac address
+        """
         return getmacbyip(ip_address)
 
     @staticmethod
     def unpack_protocol(msg: str) -> Tuple[float, float]:
+        """
+        unpacks the protocol from a xxxxx.xxxxx str to a float
+        :param msg:
+        :return:
+        """
         # move decimal spot 5 places
         x = float(msg[:10]) / 100000
         y = float(msg[10:]) / 100000

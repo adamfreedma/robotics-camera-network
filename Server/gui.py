@@ -1,10 +1,8 @@
 import wx
 import wx.grid
-import time
-import threading
 from pubsub import pub
 from win32api import GetSystemMetrics
-from typing import List, Tuple
+from typing import List, Tuple, Any
 import math_funcs
 
 app = wx.App(False)
@@ -21,7 +19,13 @@ LABEL_FONT = wx.Font(16, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.NORMAL).Bold()
 BUTTON_FONT = wx.Font(32, wx.FONTFAMILY_ROMAN, wx.NORMAL, wx.NORMAL).Bold()
 
 
-def create_text_ctrl(frame, name) -> wx.TextCtrl:
+def create_text_ctrl(frame: wx.Panel, name: str) -> wx.TextCtrl:
+    """
+    creates a consistent looking TextCtrl
+    :param frame: the current frame
+    :param name: textCtrl name
+    :return: the new TextCtrl made
+    """
     text_ctrl = wx.TextCtrl(frame, -1, name=name, size=(200, -1), style=wx.TE_RICH)
     text_ctrl.SetBackgroundColour(WIDGET_COLOR)
     text_ctrl.SetForegroundColour(wx.WHITE)
@@ -29,7 +33,13 @@ def create_text_ctrl(frame, name) -> wx.TextCtrl:
     return text_ctrl
 
 
-def create_label(frame, label) -> wx.StaticText:
+def create_label(frame: wx.Panel, label: str) -> wx.StaticText:
+    """
+    creates a consistent looking StaticText
+    :param frame: the current frame
+    :param label: the text
+    :return: the new StaticText made
+    """
     label = wx.StaticText(frame, -1, label=label)
     label.SetForegroundColour(wx.WHITE)
     label.SetFont(LABEL_FONT)
@@ -50,14 +60,11 @@ class MainPanel(wx.Panel):
 
         # creating all panels
         self.login = LoginPanel(self, self.frame)
-        # self.registration = RegistrationPanel(self, self.frame)
         self.control = ControlPanel(self, self.frame)
         self.manager = ManagerPanel(self, self.frame)
 
         box.Add(self.login)
-        # box.Add(self.registration)
         box.Add(self.control)
-
 
         # showing the opening panel
         self.login.Show()
@@ -87,7 +94,7 @@ class MainFrame(wx.Frame):
 
 class LoginPanel(wx.Panel):
 
-    def __init__(self, parent, frame):
+    def __init__(self, parent: MainPanel, frame: wx.Frame):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=SCREEN_SIZE,
                           style=wx.SIMPLE_BORDER)
 
@@ -100,8 +107,8 @@ class LoginPanel(wx.Panel):
         sizer.AddSpacer(int(SCREEN_HEIGHT / 4))
 
         user_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        # adding username input 
+
+        # adding username input
         user_label = create_label(self, "username:")
         self.user = create_text_ctrl(self, "username")
 
@@ -111,7 +118,7 @@ class LoginPanel(wx.Panel):
         sizer.Add(user_sizer, 0, wx.CENTER | wx.ALL, 5)
         sizer.AddSpacer(int(SCREEN_HEIGHT / 12))
 
-        # adding password input 
+        # adding password input
         password_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         password_label = create_label(self, "password:")
@@ -133,7 +140,7 @@ class LoginPanel(wx.Panel):
         login_button.SetForegroundColour(wx.WHITE)
 
         confirm_button.Add(login_button, 1, wx.ALL, 5)
-        
+
         sizer.Add(confirm_button, 0, wx.CENTER | wx.ALL, 5)
 
         # subscribe for login answer
@@ -144,27 +151,33 @@ class LoginPanel(wx.Panel):
         self.Layout()
         self.Hide()
 
-    def handle_login_answer(self, answer):
+    def handle_login_answer(self, answer: str):
+        """
+        goes to control panel if ack, prompts message if failed
+        :param answer: ack / rej
+        """
         if answer == "ack":
             self.Hide()
             self.parent.control.Show()
         else:
             self.frame.SetStatusText("incorrect password or username")
 
-    def on_login(self, event):
+    def on_login(self, _):
+        """
+        sends a login request
+        """
 
         if self.user and self.password:
             user = self.user.GetValue()
             password = self.password.GetValue()
             self.parent.user = user
-            
+
             pub.sendMessage("login_request", username=user, password=password)
         else:
             self.frame.SetStatusText("please fill all inputs")
 
 
 class ControlPanel(wx.Panel):
-
     OBJECT_RADIUS = 5
     FIELD_START_X = 50
     FIELD_END_X = 550
@@ -175,7 +188,7 @@ class ControlPanel(wx.Panel):
     FIELD_START_Y_METERS = -3
     FIELD_END_Y_METERS = 3
 
-    def __init__(self, parent, frame):
+    def __init__(self, parent: MainPanel, frame: wx.Frame):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=SCREEN_SIZE,
                           style=wx.SIMPLE_BORDER)
 
@@ -189,7 +202,7 @@ class ControlPanel(wx.Panel):
 
         controls_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(controls_sizer, 0, wx.ALIGN_TOP)
-        
+
         # creating directional buttons
         self.forwards_button = wx.Button(self, -1, "⬆", size=DIRECTION_BUTTON_SIZE)
         self.forwards_button.Bind(wx.EVT_BUTTON, self.on_forwards)
@@ -218,7 +231,7 @@ class ControlPanel(wx.Panel):
 
         side_arrows_sizer.Add(self.left_button, 0, wx.ALIGN_CENTER)
         side_arrows_sizer.Add(self.right_button, 0, wx.ALIGN_CENTER)
-    
+
         controls_sizer.Add(self.forwards_button, 0, wx.ALIGN_CENTER)
         controls_sizer.Add(side_arrows_sizer, 0, wx.ALIGN_CENTER)
         controls_sizer.Add(self.backwards_button, 0, wx.ALIGN_CENTER)
@@ -228,33 +241,39 @@ class ControlPanel(wx.Panel):
         # creating a timer for the direction "release"
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.stop)
-        
+
         # creating manager frame button
         manager_button = wx.Button(self, -1, "Manager", size=DIRECTION_BUTTON_SIZE)
         manager_button.Bind(wx.EVT_BUTTON, self.on_manager)
 
         manager_button.SetBackgroundColour(WIDGET_COLOR)
         manager_button.SetForegroundColour(wx.WHITE)
-        
+
         controls_sizer.Add(manager_button, 0, wx.ALIGN_CENTER)
-        
+
         # setting the field painter
         self.paint_field()
         pub.subscribe(self.paint_cones, "cones_list")
-        
+
         # arrange the frame
         self.SetSizer(sizer)
         self.Layout()
         self.Hide()
 
-    def stop(self, event):
+    def stop(self, _):
+        """
+        stops the movement
+        """
         self.forwards_button.SetBackgroundColour(WIDGET_COLOR)
         self.right_button.SetBackgroundColour(WIDGET_COLOR)
         self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
         self.left_button.SetBackgroundColour(WIDGET_COLOR)
         pub.sendMessage("direction", direction="S")
 
-    def on_forwards(self, event):
+    def on_forwards(self, _):
+        """
+        move forwards
+        """
         self.forwards_button.SetBackgroundColour(wx.WHITE)
         self.left_button.SetBackgroundColour(WIDGET_COLOR)
         self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
@@ -262,7 +281,10 @@ class ControlPanel(wx.Panel):
         pub.sendMessage("direction", direction="F")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
 
-    def on_right(self, event):
+    def on_right(self, _):
+        """
+        move right
+        """
         self.right_button.SetBackgroundColour(wx.WHITE)
         self.left_button.SetBackgroundColour(WIDGET_COLOR)
         self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
@@ -271,7 +293,10 @@ class ControlPanel(wx.Panel):
         pub.sendMessage("direction", direction="R")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
 
-    def on_backwards(self, event):
+    def on_backwards(self, _):
+        """
+        move backwards
+        """
         self.backwards_button.SetBackgroundColour(wx.WHITE)
         self.left_button.SetBackgroundColour(WIDGET_COLOR)
         self.right_button.SetBackgroundColour(WIDGET_COLOR)
@@ -280,7 +305,10 @@ class ControlPanel(wx.Panel):
         pub.sendMessage("direction", direction="B")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
 
-    def on_left(self, event):
+    def on_left(self, _):
+        """
+        move left
+        """
         self.left_button.SetBackgroundColour(wx.WHITE)
         self.right_button.SetBackgroundColour(WIDGET_COLOR)
         self.backwards_button.SetBackgroundColour(WIDGET_COLOR)
@@ -288,13 +316,16 @@ class ControlPanel(wx.Panel):
 
         pub.sendMessage("direction", direction="L")
         self.timer.Start(CLICK_LENGTH_MS, oneShot=True)
-        
-    def on_manager(self, event):
+
+    def on_manager(self, _):
+        """
+        goes to the manager screen
+        """
         self.Hide()
         self.parent.manager.Show()
 
     def paint_field(self):
-        """set up the device context (DC) for painting"""
+        """paints the field on the frame"""
         self.dc = wx.ClientDC(self)
         self.dc.SetPen(wx.Pen("grey", style=wx.TRANSPARENT))
         self.dc.SetBrush(wx.Brush("grey", wx.SOLID))
@@ -303,6 +334,10 @@ class ControlPanel(wx.Panel):
                               self.FIELD_END_Y - self.FIELD_START_Y)
 
     def paint_cones(self, cones: List[List[float]]):
+        """
+        draws all the cones as yellow circles
+        :param cones: cones list
+        """
         self.paint_field()
         for cone in cones:
             x, y = self._scale_to_field(*cone[:2])
@@ -312,15 +347,23 @@ class ControlPanel(wx.Panel):
             self.dc.DrawCircle(x, y, self.OBJECT_RADIUS)
 
     def _scale_to_field(self, x: float, y: float) -> Tuple[int, int]:
-        x = int(math_funcs.dead_band(x, (self.FIELD_START_X_METERS, self.FIELD_START_X), (self.FIELD_END_X_METERS, self.FIELD_END_X)))
-        y = int(math_funcs.dead_band(y, (self.FIELD_START_Y_METERS, self.FIELD_START_Y), (self.FIELD_END_Y_METERS, self.FIELD_END_Y)))
+        """
+        scales the location of the cones from real world to screen
+        :param x: x
+        :param y: y
+        :return: the new location
+        """
+        x = int(math_funcs.dead_band(x, (self.FIELD_START_X_METERS, self.FIELD_START_X),
+                                     (self.FIELD_END_X_METERS, self.FIELD_END_X)))
+        y = int(math_funcs.dead_band(y, (self.FIELD_START_Y_METERS, self.FIELD_START_Y),
+                                     (self.FIELD_END_Y_METERS, self.FIELD_END_Y)))
 
         return x, y
 
 
 class ManagerPanel(wx.Panel):
 
-    def __init__(self, parent, frame):
+    def __init__(self, parent: MainPanel, frame: wx.Frame):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=SCREEN_SIZE,
                           style=wx.SIMPLE_BORDER)
 
@@ -330,6 +373,7 @@ class ManagerPanel(wx.Panel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
+        # creating a back button
         back_button = wx.Button(self, label="⤺", size=(160, 80))
         back_button.Bind(wx.EVT_BUTTON, self.on_back)
         back_button.SetBackgroundColour((255, 0, 0, 200))
@@ -452,9 +496,7 @@ class ManagerPanel(wx.Panel):
         create_camera_button.SetBackgroundColour((0, 255, 0, 200))
         create_camera_button.SetFont(BUTTON_FONT)
 
-        edit_camera_button = wx.Button(self, label="✎", size=(100
-
-                                                              , 100))
+        edit_camera_button = wx.Button(self, label="✎", size=(100, 100))
         edit_camera_button.Bind(wx.EVT_BUTTON, self.on_edit_camera)
         edit_camera_button.SetForegroundColour((255, 255, 255, 200))
         edit_camera_button.SetBackgroundColour((0, 0, 255, 200))
@@ -555,11 +597,17 @@ class ManagerPanel(wx.Panel):
         self.Layout()
         self.Hide()
 
-    def on_back(self, event):
+    def on_back(self, _):
+        """
+        goes back to the control panel
+        """
         self.Hide()
         self.parent.control.Show()
 
-    def on_delete(self, event):
+    def on_delete(self, _):
+        """
+        deletes grid rows from the grid and database
+        """
         selected_rows = self.cameras_grid.GetSelectedRows()
         if len(self.cameras_grid.GetSelectionBlockTopLeft()):
             selected_cell_rows = range(self.cameras_grid.GetSelectionBlockTopLeft()[0][0],
@@ -590,7 +638,10 @@ class ManagerPanel(wx.Panel):
 
             self.refresh_lists()
 
-    def on_create_camera(self, event):
+    def on_create_camera(self, _):
+        """
+        inserts a camera into the database / prompts a message if not all fields are filled
+        """
         name = self.name_input.GetValue()
         self.name_input.Clear()
         mac = self.mac_input.GetValue()
@@ -613,7 +664,10 @@ class ManagerPanel(wx.Panel):
         else:
             self.frame.SetStatusText("please fill all fields!")
 
-    def on_edit_camera(self, event):
+    def on_edit_camera(self, _):
+        """
+        updates a camera in the database / prompts a message if not all fields are filled
+        """
         name = self.name_input.GetValue()
         self.name_input.Clear()
         mac = self.mac_input.GetValue()
@@ -636,7 +690,10 @@ class ManagerPanel(wx.Panel):
         else:
             self.frame.SetStatusText("please fill all fields!")
 
-    def on_create_user(self, event):
+    def on_create_user(self, _):
+        """
+        inserts a user into the database / prompts a message if not all fields are filled
+        """
         username = self.username_input.GetValue()
         self.username_input.Clear()
         password = self.password_input.GetValue()
@@ -647,7 +704,10 @@ class ManagerPanel(wx.Panel):
         else:
             self.frame.SetStatusText("please fill both username and password fields!")
 
-    def on_edit_user(self, event):
+    def on_edit_user(self, _):
+        """
+        updates a user in the database / prompts a message if not all fields are filled
+        """
         username = self.username_input.GetValue()
         self.username_input.Clear()
         password = self.password_input.GetValue()
@@ -658,7 +718,11 @@ class ManagerPanel(wx.Panel):
         else:
             self.frame.SetStatusText("please fill both username and password fields!")
 
-    def handle_cameras_refresh(self, cameras_list):
+    def handle_cameras_refresh(self, cameras_list: List[Tuple[Any]]):
+        """
+        fills the grid with the cameras from the database
+        :param cameras_list: camera_list from the database
+        """
         if self.cameras_grid.GetNumberRows():
             self.cameras_grid.DeleteRows(numRows=self.cameras_grid.GetNumberRows())
         self.cameras_grid.InsertRows(numRows=len(cameras_list))
@@ -672,7 +736,11 @@ class ManagerPanel(wx.Panel):
                 # setting cell to read only
                 self.cameras_grid.SetReadOnly(i, j)
 
-    def handle_users_refresh(self, users_list):
+    def handle_users_refresh(self, users_list: List[Tuple[Any]]):
+        """
+        fills the grid with the users from the database
+        :param users_list: camera_list from the database
+        """
         if self.users_grid.GetNumberRows():
             self.users_grid.DeleteRows(numRows=self.users_grid.GetNumberRows())
         self.users_grid.InsertRows(numRows=len(users_list))
@@ -686,29 +754,41 @@ class ManagerPanel(wx.Panel):
                 # setting cell to read only
                 self.users_grid.SetReadOnly(i, j)
 
-    def handle_create_user_answer(self, answer):
-
+    def handle_create_user_answer(self, answer: str):
+        """
+        either refreshes the grid or prompts a message
+        :param answer: S / F did the creation succeed
+        """
         if answer == "S":
             self.refresh_lists()
         else:
             self.frame.SetStatusText("username already exists, try another one")
 
     def handle_create_camera_answer(self, answer):
-
+        """
+        either refreshes the grid or prompts a message
+        :param answer: S / F did the creation succeed
+        """
         if answer == "S":
             self.refresh_lists()
         else:
             self.frame.SetStatusText("mac or name already exists, try another one")
 
     def handle_edit_user_answer(self, answer):
-
+        """
+        either refreshes the grid or prompts a message
+        :param answer: S / F did the update succeed
+        """
         if answer == "S":
             self.refresh_lists()
         else:
             self.frame.SetStatusText("username dose not exists, try another one")
 
     def handle_edit_camera_answer(self, answer):
-
+        """
+        either refreshes the grid or prompts a message
+        :param answer: S / F did the update succeed
+        """
         if answer == "S":
             self.refresh_lists()
         else:
@@ -716,9 +796,13 @@ class ManagerPanel(wx.Panel):
 
     @staticmethod
     def refresh_lists():
+        """
+        requests for updated data for the grids
+        :return:
+        """
         pub.sendMessage("refresh_request")
 
 
 if __name__ == "__main__":
-    frame = MainFrame()
+    MainFrame()
     app.MainLoop()

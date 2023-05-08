@@ -1,8 +1,8 @@
 import cv2
 import threading
 import queue
-import detector
 import time
+
 
 class Camera(object):
 
