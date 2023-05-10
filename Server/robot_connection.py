@@ -17,7 +17,7 @@ class RobotConnection:
 
     def _connect(self):
         """
-        conencts to the robot using networktables
+        connects to the robot using networktables
         """
         self.nt_instance.startClientTeam(self.TEAM_NUMBER)
         self.nt_instance.startDSClient()

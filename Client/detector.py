@@ -81,7 +81,7 @@ class Detector:
         while True:
             if not self.results_queue.qsize():
                 time.sleep(0.02)
-
+            else:
                 bounding_boxes = self.results_queue.get()
 
                 locations = []
@@ -124,37 +124,37 @@ class Detector:
         while True:
             if not self.camera.frames_queue.qsize():
                 time.sleep(0.02)
+            else:
+                frame = self.camera.frames_queue.get()
 
-            frame = self.camera.frames_queue.get()
+                classes, confidences, boxes = self.net.detect(frame, confThreshold=self.CONFIG_THRESHOLD,
+                                                              nmsThreshold=self.NMS_THRESHOLD)
 
-            classes, confidences, boxes = self.net.detect(frame, confThreshold=self.CONFIG_THRESHOLD,
-                                                          nmsThreshold=self.NMS_THRESHOLD)
+                results = []
 
-            results = []
-
-            if len(classes):
-                # appends the detection to the list
-                for classID, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
-                    if confidence > 0.5:
-                        left, top, width, height = box
-                        results.append((classID, left, top, width, height))
-
-                # showing the results in a separate window
-                if self.show:
+                if len(classes):
+                    # appends the detection to the list
                     for classID, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
                         if confidence > 0.5:
-                            label = '%.2f' % confidence
-                            label = '%s: %s' % (classID, label)
-                            label_size, baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
                             left, top, width, height = box
-                            top = max(top, label_size[1])
-                            cv2.rectangle(frame, box, color=(0, 255, 0), thickness=3)
-                            cv2.rectangle(frame, (left, top - label_size[1]), (left + label_size[0], top + baseline),
-                                          (255, 255, 255), cv2.FILLED)
-                            cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-            if self.show:
-                cv2.imshow("show", frame)
+                            results.append((classID, left, top, width, height))
 
-                cv2.waitKey(1)
-            if len(results):
-                self.results_queue.put(results)
+                    # showing the results in a separate window
+                    if self.show:
+                        for classID, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
+                            if confidence > 0.5:
+                                label = '%.2f' % confidence
+                                label = '%s: %s' % (classID, label)
+                                label_size, baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                                left, top, width, height = box
+                                top = max(top, label_size[1])
+                                cv2.rectangle(frame, box, color=(0, 255, 0), thickness=3)
+                                cv2.rectangle(frame, (left, top - label_size[1]), (left + label_size[0], top + baseline),
+                                              (255, 255, 255), cv2.FILLED)
+                                cv2.putText(frame, label, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+                if self.show:
+                    cv2.imshow("show", frame)
+
+                    cv2.waitKey(1)
+                if len(results):
+                    self.results_queue.put(results)

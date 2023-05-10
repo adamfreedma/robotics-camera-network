@@ -27,7 +27,7 @@ class Merger(object):
         inserts the new object received into the potential new object list
         :param x: object x position
         :param y: object y position
-        :return: adds the object into the list
+        adds the object into the list
         """
         self.lock.acquire()
         self.client_object_list.append([x, y, time.time()])
@@ -36,7 +36,7 @@ class Merger(object):
     def _run(self):
         """
         merger's main loop, merges all objects received from clients into one compressed list
-        :return: merges the list
+        merges the list
         """
         while True:
             merge_list: List[List[float, float, float]] = []
