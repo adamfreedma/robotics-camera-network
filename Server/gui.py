@@ -83,6 +83,8 @@ class MainFrame(wx.Frame):
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(main_panel, 1, wx.EXPAND)
 
+        self.Maximize(True)
+
         self.CreateStatusBar(1)
         self.SetStatusText("robotics camera network")
 
