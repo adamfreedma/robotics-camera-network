@@ -76,7 +76,7 @@ class MainFrame(wx.Frame):
 
     def __init__(self, parent=None):
         super(MainFrame, self).__init__(parent, title="robotics camera network", size=SCREEN_SIZE)
-        wx.Frame.__init__(self, None, title="Main App")
+        wx.Frame.__init__(self, None, title="robotics camera network")
 
         # create main panel
         main_panel = MainPanel(self)
@@ -84,6 +84,9 @@ class MainFrame(wx.Frame):
         box.Add(main_panel, 1, wx.EXPAND)
 
         self.Maximize(True)
+
+        icon = wx.Icon("logo.png", wx.BITMAP_TYPE_ANY)
+        self.SetIcon(icon)
 
         self.CreateStatusBar(1)
         self.SetStatusText("robotics camera network")
